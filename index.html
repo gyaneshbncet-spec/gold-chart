@@ -304,11 +304,42 @@
     }
   }
 
-  // 2. Order Block Extraction (At least 3 valid active blocks displayed)
+  // 2. Overlap Consolidator Engine: Merges any overlapping order blocks into a single valid zone
+  function mergeOverlappingZones(zones) {
+    if (!zones || zones.length <= 1) return zones;
+
+    // Sort ascending by bottom boundary
+    zones.sort((a, b) => a.bottom - b.bottom);
+
+    const merged = [];
+    let current = { ...zones[0] };
+
+    for (let i = 1; i < zones.length; i++) {
+      const next = zones[i];
+
+      // Check if current block and next block overlap or touch in price range
+      if (current.top >= next.bottom) {
+        // Merge into a single continuous valid block
+        current.bottom = Math.min(current.bottom, next.bottom);
+        current.top = Math.max(current.top, next.top);
+        current.startIndex = Math.min(current.startIndex, next.startIndex);
+        current.volume = parseFloat((current.volume + next.volume).toFixed(3));
+        current.pct = Math.round((current.pct + next.pct) / 2);
+        current.id = `merged_${current.startIndex}_${current.bottom.toFixed(2)}`;
+      } else {
+        merged.push(current);
+        current = { ...next };
+      }
+    }
+    merged.push(current);
+    return merged;
+  }
+
+  // 3. Invalidation Purge (Failed or Double-Crossed Blocks Immediately Removed)
   function purgeInvalidatedOBs(data) {
     if (!data || data.length === 0) return;
 
-    // Filter out Demand Blocks that failed
+    // Filter Demand Blocks
     storedDemandOBs = storedDemandOBs.filter(ob => {
       let crossCount = 0;
       let wasInside = false;
@@ -316,10 +347,10 @@
       for (let k = ob.startIndex + 1; k < data.length; k++) {
         const bar = data[k];
 
-        // Rule 1: Candle body closes below the block bottom
+        // Rule 1: A candle body closes below the bottom = Failed OB
         if (bar.c < ob.bottom) return false;
 
-        // Rule 2: Re-cross/mitigation cycle happens twice
+        // Rule 2: Re-cross/mitigation cycle occurs twice
         if (bar.l < ob.bottom) {
           if (!wasInside) {
             crossCount++;
@@ -332,13 +363,13 @@
         if (crossCount >= 2) return false;
       }
 
-      // Live tick break
+      // Check current live price tick
       if (state.gold_price < ob.bottom) return false;
 
       return true;
     });
 
-    // Filter out Supply Blocks that failed
+    // Filter Supply Blocks
     storedSupplyOBs = storedSupplyOBs.filter(ob => {
       let crossCount = 0;
       let wasInside = false;
@@ -346,10 +377,10 @@
       for (let k = ob.startIndex + 1; k < data.length; k++) {
         const bar = data[k];
 
-        // Rule 1: Candle body closes above the block top
+        // Rule 1: A candle body closes above the top = Failed OB
         if (bar.c > ob.top) return false;
 
-        // Rule 2: Re-cross/mitigation cycle happens twice
+        // Rule 2: Re-cross/mitigation cycle occurs twice
         if (bar.h > ob.top) {
           if (!wasInside) {
             crossCount++;
@@ -362,7 +393,7 @@
         if (crossCount >= 2) return false;
       }
 
-      // Live tick break
+      // Check current live price tick
       if (state.gold_price > ob.top) return false;
 
       return true;
@@ -378,7 +409,7 @@
       const next2 = data[i + 2];
       const avgRange = (data[i-1].h - data[i-1].l + data[i-2].h - data[i-2].l) / 2 || 2;
 
-      // Bullish Demand OB
+      // Bullish Demand OB Setup
       const isBull = (next1.c > next1.o) && ((next1.c - next1.o) + (next2.c - next2.o) > avgRange * 1.4);
       if (current.c < current.o && isBull && (next2.c > current.h)) {
         const id = `dem_${i}_${current.l.toFixed(2)}`;
@@ -409,12 +440,10 @@
             id: id, startIndex: i, top: top, bottom: bottom,
             volume: distinctVol, pct: distinctPct, tfName: state.tf_interval.toUpperCase()
           });
-          // Retain at least 3 blocks if available
-          if (storedDemandOBs.length > 3) storedDemandOBs.shift();
         }
       }
 
-      // Bearish Supply OB
+      // Bearish Supply OB Setup
       const isBear = (next1.c < next1.o) && ((next1.o - next1.c) + (next2.o - next2.c) > avgRange * 1.4);
       if (current.c > current.o && isBear && (next2.c < current.l)) {
         const id = `sup_${i}_${current.h.toFixed(2)}`;
@@ -445,16 +474,23 @@
             id: id, startIndex: i, top: top, bottom: bottom,
             volume: distinctVol, pct: distinctPct, tfName: state.tf_interval.toUpperCase()
           });
-          // Retain at least 3 blocks if available
-          if (storedSupplyOBs.length > 3) storedSupplyOBs.shift();
         }
       }
     }
 
+    // Step A: Immediately purge any zones invalidated by price closes or 2nd crosses
     purgeInvalidatedOBs(data);
+
+    // Step B: Merge any overlapping zones so no two blocks overlap on screen
+    storedDemandOBs = mergeOverlappingZones(storedDemandOBs);
+    storedSupplyOBs = mergeOverlappingZones(storedSupplyOBs);
+
+    // Step C: Keep at most the last 3 valid consolidated blocks
+    if (storedDemandOBs.length > 3) storedDemandOBs = storedDemandOBs.slice(-3);
+    if (storedSupplyOBs.length > 3) storedSupplyOBs = storedSupplyOBs.slice(-3);
   }
 
-  // 3. Mathematical Confluence Crossing Engine
+  // 4. Mathematical Confluence Crossing Engine
   function computeStandardTrendlines(data) {
     if (data.length < 25) return { diagonals: [], confluences: [] };
 
@@ -586,7 +622,7 @@
     return { diagonals, confluences: confluences.slice(-2) };
   }
 
-  // 4. Canvas Renderer
+  // 5. Canvas Renderer
   function drawTradingViewChart() {
     const canvas = document.getElementById("tvCanvas");
     if (!canvas || !canvas.parentElement || candleHistory.length === 0) return;
@@ -663,7 +699,7 @@
       ctx.fillText(p.toFixed(2), chartW + 8, y + 4);
     }
 
-    // 5. Draw Active Unmitigated Order Blocks (Up to 3 per side)
+    // 6. Draw Non-Overlapping Consolidated Order Blocks
     storedSupplyOBs.forEach(ob => {
       const xStart = Math.max(0, getX(ob.startIndex));
       const yTop = getY(ob.top);
@@ -710,7 +746,7 @@
       }
     });
 
-    // 6. Draw Trendlines
+    // 7. Draw Trendlines
     const { diagonals, confluences } = computeStandardTrendlines(candleHistory);
     const lastCandleX = getX(candleHistory.length - 1);
 
@@ -759,7 +795,7 @@
       }
     });
 
-    // 7. Render Isolated Confluences
+    // 8. Render Isolated Confluences
     confluences.forEach(conf => {
       const cx = getX(conf.xIdx);
       const cy = getY(conf.price);
@@ -798,7 +834,7 @@
       }
     });
 
-    // 8. Candlesticks
+    // 9. Candlesticks
     ctx.textAlign = "center";
     ctx.font = "10px sans-serif";
     ctx.fillStyle = "#656a76";
@@ -829,7 +865,7 @@
       }
     });
 
-    // 9. Live Price Cursor & Countdown Badge
+    // 10. Live Price Cursor & Countdown Badge
     const liveY = Math.round(getY(state.gold_price)) + 0.5;
     ctx.strokeStyle = "#ff2a44";
     ctx.setLineDash([2, 2]);
@@ -967,7 +1003,7 @@
     if (chfEl) chfEl.innerText = `${state.chf_pct >= 0 ? '+' : ''}${state.chf_pct.toFixed(2)}%`;
   }
 
-  // 5. WebSocket Live Stream
+  // 11. WebSocket Live Stream
   function initWebSocket() {
     const ws = new WebSocket("wss://stream.binance.com:9443/ws/paxgusdt@ticker/paxgusdt@trade/eurusdt@ticker");
     
@@ -991,8 +1027,10 @@
           if (state.gold_price < cur.l) cur.l = state.gold_price;
         }
 
-        // Real-time invalidation purge
+        // Real-time invalidation and merging on live ticks
         purgeInvalidatedOBs(candleHistory);
+        storedDemandOBs = mergeOverlappingZones(storedDemandOBs);
+        storedSupplyOBs = mergeOverlappingZones(storedSupplyOBs);
       }
 
       if (data.e === "24hrTicker" && data.s === "EURUSDT") {
