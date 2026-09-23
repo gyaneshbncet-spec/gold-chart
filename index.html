@@ -11,6 +11,72 @@
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
     body { background-color: #050608; color: #e1e4ea; padding: 12px 8px; display: flex; justify-content: center; }
     
+    /* --- Security Lock Screen --- */
+    .pin-lock-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #050608;
+      z-index: 999999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .pin-title { font-size: 19px; font-weight: 700; color: #ffffff; margin-bottom: 6px; letter-spacing: 0.5px; }
+    .pin-subtitle { font-size: 13px; color: #787b86; margin-bottom: 24px; }
+    
+    .pin-dots { display: flex; gap: 16px; margin-bottom: 30px; }
+    .pin-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 2px solid #2a3142;
+      background: transparent;
+      transition: all 0.2s ease;
+    }
+    .pin-dot.filled {
+      background: #b48312;
+      border-color: #b48312;
+      box-shadow: 0 0 10px rgba(180, 131, 18, 0.6);
+    }
+    .pin-dot.error {
+      background: #ff2a44 !important;
+      border-color: #ff2a44 !important;
+      box-shadow: 0 0 12px rgba(255, 42, 68, 0.7) !important;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 72px);
+      gap: 16px;
+      justify-content: center;
+    }
+    .key-btn {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: #11141d;
+      border: 1px solid #1f2430;
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.1s;
+      user-select: none;
+    }
+    .key-btn:active { background: #1e2433; transform: scale(0.92); }
+    .key-btn.action { font-size: 14px; font-weight: 700; color: #8e95a5; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-10px); }
+      40%, 80% { transform: translateX(10px); }
+    }
+    .shake-anim { animation: shake 0.35s ease-in-out; }
+
+    /* --- Core App Styles --- */
     .card { background: #0c0e14; border-radius: 16px; border: 1px solid #1f2430; width: 100%; max-width: 480px; padding: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8); }
     h1 { font-size: 18px; font-weight: 700; margin: 0 0 4px 0; color: #ffffff; }
     .gold-spot { font-size: 13.5px; color: #8e95a5; margin-bottom: 14px; font-weight: 500; }
@@ -116,6 +182,34 @@
   </style>
 </head>
 <body>
+
+<!-- PIN Lock Overlay -->
+<div class="pin-lock-overlay" id="pinLockScreen">
+  <div class="pin-title">Authentication Required</div>
+  <div class="pin-subtitle">Enter 4-digit PIN to access terminal</div>
+  
+  <div class="pin-dots" id="pinDotsContainer">
+    <div class="pin-dot"></div>
+    <div class="pin-dot"></div>
+    <div class="pin-dot"></div>
+    <div class="pin-dot"></div>
+  </div>
+
+  <div class="keypad">
+    <button class="key-btn" onclick="pressPin('1')">1</button>
+    <button class="key-btn" onclick="pressPin('2')">2</button>
+    <button class="key-btn" onclick="pressPin('3')">3</button>
+    <button class="key-btn" onclick="pressPin('4')">4</button>
+    <button class="key-btn" onclick="pressPin('5')">5</button>
+    <button class="key-btn" onclick="pressPin('6')">6</button>
+    <button class="key-btn" onclick="pressPin('7')">7</button>
+    <button class="key-btn" onclick="pressPin('8')">8</button>
+    <button class="key-btn" onclick="pressPin('9')">9</button>
+    <button class="key-btn action" onclick="clearPin()">CLEAR</button>
+    <button class="key-btn" onclick="pressPin('0')">0</button>
+    <button class="key-btn action" onclick="deletePin()">⌫</button>
+  </div>
+</div>
 
 <div class="card">
   <h1>Gold (XAU/USD) Live Correlation Signal</h1>
@@ -235,6 +329,75 @@
 </div>
 
 <script>
+  // --- Security & PIN Lock Logic ---
+  const TARGET_PIN = "0905";
+  let enteredPin = "";
+
+  function updatePinDots(state = "normal") {
+    const dots = document.querySelectorAll(".pin-dot");
+    dots.forEach((dot, idx) => {
+      dot.className = "pin-dot";
+      if (state === "error") {
+        dot.classList.add("error");
+      } else if (idx < enteredPin.length) {
+        dot.classList.add("filled");
+      }
+    });
+  }
+
+  function pressPin(num) {
+    if (enteredPin.length >= 4) return;
+    enteredPin += num;
+    updatePinDots();
+
+    if (enteredPin.length === 4) {
+      setTimeout(verifyPin, 100);
+    }
+  }
+
+  function deletePin() {
+    if (enteredPin.length > 0) {
+      enteredPin = enteredPin.slice(0, -1);
+      updatePinDots();
+    }
+  }
+
+  function clearPin() {
+    enteredPin = "";
+    updatePinDots();
+  }
+
+  function verifyPin() {
+    if (enteredPin === TARGET_PIN) {
+      sessionStorage.setItem("gold_app_unlocked", "true");
+      unlockApp();
+    } else {
+      if (navigator.vibrate) navigator.vibrate(200);
+      const container = document.getElementById("pinDotsContainer");
+      container.classList.add("shake-anim");
+      updatePinDots("error");
+
+      setTimeout(() => {
+        container.classList.remove("shake-anim");
+        clearPin();
+      }, 450);
+    }
+  }
+
+  function unlockApp() {
+    const lockScreen = document.getElementById("pinLockScreen");
+    if (lockScreen) {
+      lockScreen.style.opacity = "0";
+      lockScreen.style.transition = "opacity 0.3s ease";
+      setTimeout(() => {
+        lockScreen.style.display = "none";
+      }, 300);
+    }
+    initWebSocket();
+    updateCorrelationHUD();
+  }
+
+  // --- Chart Engine & Core State ---
   const state = {
     gold_price: 4316.55,
     gold_change: -42.78,
@@ -259,12 +422,8 @@
   };
 
   let candleHistory = [];
-  
-  // Historical storage pool of all detected order blocks
   let allCandidateDemandOBs = [];
   let allCandidateSupplyOBs = [];
-
-  // Final rendered array (Active unbroken latest 3 zones)
   let storedDemandOBs = [];
   let storedSupplyOBs = [];
 
@@ -314,7 +473,6 @@
   function mergeOverlappingZones(zones) {
     if (!zones || zones.length <= 1) return zones;
 
-    // Sort ascending by bottom boundary
     const sorted = [...zones].sort((a, b) => a.bottom - b.bottom);
     const merged = [];
     let current = { ...sorted[0] };
@@ -325,7 +483,7 @@
       if (current.top >= next.bottom) {
         current.bottom = Math.min(current.bottom, next.bottom);
         current.top = Math.max(current.top, next.top);
-        current.startIndex = Math.max(current.startIndex, next.startIndex); // Keep more recent index anchor
+        current.startIndex = Math.max(current.startIndex, next.startIndex);
         current.volume = parseFloat((current.volume + next.volume).toFixed(3));
         current.pct = Math.round((current.pct + next.pct) / 2);
         current.id = `merged_${current.startIndex}_${current.bottom.toFixed(2)}`;
@@ -347,19 +505,14 @@
       const bar = data[k];
 
       if (isDemand) {
-        // Failed if any subsequent candle body closes below the bottom
         if (bar.c < ob.bottom) return false;
-
-        // Failed if price re-crosses/mitigates the zone a second time
         if (bar.l < ob.bottom) {
           if (!wasInside) { crossCount++; wasInside = true; }
         } else if (bar.l > ob.top) {
           wasInside = false;
         }
       } else {
-        // Failed if any subsequent candle body closes above the top
         if (bar.c > ob.top) return false;
-
         if (bar.h > ob.top) {
           if (!wasInside) { crossCount++; wasInside = true; }
         } else if (bar.h < ob.bottom) {
@@ -370,14 +523,13 @@
       if (crossCount >= 2) return false;
     }
 
-    // Check live real-time price tick
     if (isDemand && state.gold_price < ob.bottom) return false;
     if (!isDemand && state.gold_price > ob.top) return false;
 
     return true;
   }
 
-  // 4. Scan Full Pool & Automatically Fallback to Older Blocks if any Block Fails
+  // 4. Scan Full Pool & Fallback to Older Blocks if any Block Fails
   function scanAndStoreOrderBlocks(data) {
     if (data.length < 15) return;
 
@@ -436,25 +588,19 @@
     refreshActiveOrderBlocks(data);
   }
 
-  // Refreshes the active 3 blocks, pulling older unmitigated candidates if recent ones broke
   function refreshActiveOrderBlocks(data) {
-    // Filter candidate pools keeping ONLY unbroken ones
     const validDemandPool = allCandidateDemandOBs.filter(ob => isZoneValid(ob, true, data));
     const validSupplyPool = allCandidateSupplyOBs.filter(ob => isZoneValid(ob, false, data));
 
-    // Sort descending by recency (newest candidate first)
     validDemandPool.sort((a, b) => b.startIndex - a.startIndex);
     validSupplyPool.sort((a, b) => b.startIndex - a.startIndex);
 
-    // Merge any overlapping zones so no two blocks overlap
     const mergedDemand = mergeOverlappingZones(validDemandPool);
     const mergedSupply = mergeOverlappingZones(validSupplyPool);
 
-    // Sort by recency again
     mergedDemand.sort((a, b) => b.startIndex - a.startIndex);
     mergedSupply.sort((a, b) => b.startIndex - a.startIndex);
 
-    // Select the latest 3 valid unbroken zones (if a recent one broke, an older one automatically fills in)
     storedDemandOBs = mergedDemand.slice(0, 3);
     storedSupplyOBs = mergedSupply.slice(0, 3);
   }
@@ -668,7 +814,7 @@
       ctx.fillText(p.toFixed(2), chartW + 8, y + 4);
     }
 
-    // 7. Draw Active Order Blocks (Guaranteed 3 latest valid zones)
+    // 7. Draw Active Order Blocks
     storedSupplyOBs.forEach(ob => {
       const xStart = Math.max(0, getX(ob.startIndex));
       const yTop = getY(ob.top);
@@ -998,7 +1144,6 @@
           if (state.gold_price < cur.l) cur.l = state.gold_price;
         }
 
-        // Live check: If any block breaks, immediately pull an older valid block from history
         refreshActiveOrderBlocks(candleHistory);
       }
 
@@ -1032,8 +1177,15 @@
     ws.onerror = () => setTimeout(initWebSocket, 3000);
   }
 
-  initWebSocket();
-  updateCorrelationHUD();
+  // --- App Startup Check ---
+  window.addEventListener("DOMContentLoaded", () => {
+    if (sessionStorage.getItem("gold_app_unlocked") === "true") {
+      const lockScreen = document.getElementById("pinLockScreen");
+      if (lockScreen) lockScreen.style.display = "none";
+      initWebSocket();
+      updateCorrelationHUD();
+    }
+  });
 </script>
 </body>
 </html>
