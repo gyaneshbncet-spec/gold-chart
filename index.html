@@ -304,11 +304,11 @@
     }
   }
 
-  // 2. Immediate OB Removal on Failure or Re-Cross
+  // 2. Order Block Extraction (At least 3 valid active blocks displayed)
   function purgeInvalidatedOBs(data) {
     if (!data || data.length === 0) return;
 
-    // Filter Demand Blocks
+    // Filter out Demand Blocks that failed
     storedDemandOBs = storedDemandOBs.filter(ob => {
       let crossCount = 0;
       let wasInside = false;
@@ -316,10 +316,10 @@
       for (let k = ob.startIndex + 1; k < data.length; k++) {
         const bar = data[k];
 
-        // Rule 1: A candle body closes below the bottom of the demand block = Immediate Fail
+        // Rule 1: Candle body closes below the block bottom
         if (bar.c < ob.bottom) return false;
 
-        // Rule 2: Price re-crosses/mitigates the zone a second time = Immediate Fail
+        // Rule 2: Re-cross/mitigation cycle happens twice
         if (bar.l < ob.bottom) {
           if (!wasInside) {
             crossCount++;
@@ -332,13 +332,13 @@
         if (crossCount >= 2) return false;
       }
 
-      // Check current live price tick
+      // Live tick break
       if (state.gold_price < ob.bottom) return false;
 
       return true;
     });
 
-    // Filter Supply Blocks
+    // Filter out Supply Blocks that failed
     storedSupplyOBs = storedSupplyOBs.filter(ob => {
       let crossCount = 0;
       let wasInside = false;
@@ -346,10 +346,10 @@
       for (let k = ob.startIndex + 1; k < data.length; k++) {
         const bar = data[k];
 
-        // Rule 1: A candle body closes above the top of the supply block = Immediate Fail
+        // Rule 1: Candle body closes above the block top
         if (bar.c > ob.top) return false;
 
-        // Rule 2: Price re-crosses/mitigates the zone a second time = Immediate Fail
+        // Rule 2: Re-cross/mitigation cycle happens twice
         if (bar.h > ob.top) {
           if (!wasInside) {
             crossCount++;
@@ -362,7 +362,7 @@
         if (crossCount >= 2) return false;
       }
 
-      // Check current live price tick
+      // Live tick break
       if (state.gold_price > ob.top) return false;
 
       return true;
@@ -378,14 +378,13 @@
       const next2 = data[i + 2];
       const avgRange = (data[i-1].h - data[i-1].l + data[i-2].h - data[i-2].l) / 2 || 2;
 
-      // Bullish Demand OB Setup
+      // Bullish Demand OB
       const isBull = (next1.c > next1.o) && ((next1.c - next1.o) + (next2.c - next2.o) > avgRange * 1.4);
       if (current.c < current.o && isBull && (next2.c > current.h)) {
         const id = `dem_${i}_${current.l.toFixed(2)}`;
         const top = Math.max(current.o, current.c);
         const bottom = current.l;
 
-        // Check if previously broken/mitigated
         let failed = false;
         let crosses = 0;
         let wasInside = false;
@@ -410,11 +409,12 @@
             id: id, startIndex: i, top: top, bottom: bottom,
             volume: distinctVol, pct: distinctPct, tfName: state.tf_interval.toUpperCase()
           });
-          if (storedDemandOBs.length > 2) storedDemandOBs.shift();
+          // Retain at least 3 blocks if available
+          if (storedDemandOBs.length > 3) storedDemandOBs.shift();
         }
       }
 
-      // Bearish Supply OB Setup
+      // Bearish Supply OB
       const isBear = (next1.c < next1.o) && ((next1.o - next1.c) + (next2.o - next2.c) > avgRange * 1.4);
       if (current.c > current.o && isBear && (next2.c < current.l)) {
         const id = `sup_${i}_${current.h.toFixed(2)}`;
@@ -445,7 +445,8 @@
             id: id, startIndex: i, top: top, bottom: bottom,
             volume: distinctVol, pct: distinctPct, tfName: state.tf_interval.toUpperCase()
           });
-          if (storedSupplyOBs.length > 2) storedSupplyOBs.shift();
+          // Retain at least 3 blocks if available
+          if (storedSupplyOBs.length > 3) storedSupplyOBs.shift();
         }
       }
     }
@@ -662,7 +663,7 @@
       ctx.fillText(p.toFixed(2), chartW + 8, y + 4);
     }
 
-    // 5. Draw Active Unmitigated Order Blocks
+    // 5. Draw Active Unmitigated Order Blocks (Up to 3 per side)
     storedSupplyOBs.forEach(ob => {
       const xStart = Math.max(0, getX(ob.startIndex));
       const yTop = getY(ob.top);
@@ -990,7 +991,7 @@
           if (state.gold_price < cur.l) cur.l = state.gold_price;
         }
 
-        // Live check: immediately purge any OBs violated by live price movement
+        // Real-time invalidation purge
         purgeInvalidatedOBs(candleHistory);
       }
 
