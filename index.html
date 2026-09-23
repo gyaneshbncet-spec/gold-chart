@@ -26,7 +26,7 @@
     .pin-title { font-size: 19px; font-weight: 700; color: #ffffff; margin-bottom: 6px; letter-spacing: 0.5px; }
     .pin-subtitle { font-size: 13px; color: #787b86; margin-bottom: 24px; }
     
-    .pin-dots { display: flex; gap: 16px; margin-bottom: 30px; }
+    .pin-dots { display: flex; gap: 16px; margin-bottom: 26px; }
     .pin-dot {
       width: 14px; height: 14px;
       border-radius: 50%;
@@ -68,6 +68,87 @@
     }
     .key-btn:active { background: #1e2433; transform: scale(0.92); }
     .key-btn.action { font-size: 14px; font-weight: 700; color: #8e95a5; }
+
+    .forgot-link {
+      margin-top: 22px;
+      background: none;
+      border: none;
+      color: #3b82f6;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 6px 12px;
+    }
+
+    /* Recovery Modal */
+    .recovery-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(8px);
+      z-index: 1000000;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .recovery-card {
+      background: #0f121a;
+      border: 1px solid #242b3a;
+      border-radius: 14px;
+      padding: 20px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.9);
+    }
+    .recovery-card h3 { font-size: 16px; margin-bottom: 8px; color: #ffffff; }
+    .recovery-card p { font-size: 12px; color: #8e95a5; margin-bottom: 16px; }
+    .recovery-input {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 8px;
+      border: 1px solid #2a3142;
+      background: #080a0f;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .recovery-input:focus { border-color: #3b82f6; }
+    .recovery-btn {
+      width: 100%;
+      padding: 11px;
+      background: #3b82f6;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .recovery-btn:active { background: #2563eb; }
+    .recovery-cancel {
+      width: 100%;
+      padding: 8px;
+      background: transparent;
+      color: #787b86;
+      border: none;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .recovered-box {
+      margin-top: 14px;
+      padding: 12px;
+      background: rgba(0, 245, 155, 0.1);
+      border: 1px solid rgba(0, 245, 155, 0.4);
+      border-radius: 8px;
+      display: none;
+    }
+    .recovered-pin-text { font-size: 24px; font-weight: 800; color: #00f59b; letter-spacing: 4px; margin: 6px 0; }
 
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
@@ -209,6 +290,27 @@
     <button class="key-btn" onclick="pressPin('0')">0</button>
     <button class="key-btn action" onclick="deletePin()">⌫</button>
   </div>
+
+  <button class="forgot-link" onclick="openRecoveryModal()">Forgot PIN?</button>
+</div>
+
+<!-- PIN Recovery Modal -->
+<div class="recovery-modal-overlay" id="recoveryModal">
+  <div class="recovery-card">
+    <h3>Recover Terminal PIN</h3>
+    <p>Enter your authorization verification phrase below:</p>
+    <input type="text" id="recoveryInput" class="recovery-input" placeholder="Type recovery phrase..." autocomplete="off">
+    
+    <button class="recovery-btn" onclick="submitRecovery()">Verify & Show PIN</button>
+    
+    <div class="recovered-box" id="recoveredBox">
+      <div style="font-size: 11.5px; color: #8e95a5;">Your 4-Digit Access PIN:</div>
+      <div class="recovered-pin-text" id="recoveredPinVal">0905</div>
+      <button class="recovery-btn" style="background:#00f59b; color:#080a0f; margin-top:8px;" onclick="applyRecoveredPin()">Auto-Fill & Unlock</button>
+    </div>
+
+    <button class="recovery-cancel" onclick="closeRecoveryModal()">Cancel</button>
+  </div>
 </div>
 
 <div class="card">
@@ -329,8 +431,9 @@
 </div>
 
 <script>
-  // --- Security & PIN Lock Logic ---
+  // --- Security, PIN Lock & Recovery Logic ---
   const TARGET_PIN = "0905";
+  const RECOVERY_PHRASE = "gyanesh pandey";
   let enteredPin = "";
 
   function updatePinDots(state = "normal") {
@@ -395,6 +498,43 @@
     }
     initWebSocket();
     updateCorrelationHUD();
+  }
+
+  // --- Recovery Handlers ---
+  function openRecoveryModal() {
+    const modal = document.getElementById("recoveryModal");
+    const input = document.getElementById("recoveryInput");
+    const box = document.getElementById("recoveredBox");
+    if (input) input.value = "";
+    if (box) box.style.display = "none";
+    if (modal) modal.style.display = "flex";
+  }
+
+  function closeRecoveryModal() {
+    const modal = document.getElementById("recoveryModal");
+    if (modal) modal.style.display = "none";
+  }
+
+  function submitRecovery() {
+    const input = document.getElementById("recoveryInput");
+    const box = document.getElementById("recoveredBox");
+    const val = input ? input.value.trim().toLowerCase() : "";
+
+    if (val === RECOVERY_PHRASE) {
+      if (box) box.style.display = "block";
+    } else {
+      alert("Invalid verification phrase. Please enter 'gyanesh pandey'.");
+    }
+  }
+
+  function applyRecoveredPin() {
+    closeRecoveryModal();
+    enteredPin = TARGET_PIN;
+    updatePinDots();
+    setTimeout(() => {
+      sessionStorage.setItem("gold_app_unlocked", "true");
+      unlockApp();
+    }, 150);
   }
 
   // --- Chart Engine & Core State ---
