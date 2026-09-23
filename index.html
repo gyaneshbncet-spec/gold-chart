@@ -304,7 +304,71 @@
     }
   }
 
-  // 2. Order Block Extraction with Double-Cross Invalidation
+  // 2. Immediate OB Removal on Failure or Re-Cross
+  function purgeInvalidatedOBs(data) {
+    if (!data || data.length === 0) return;
+
+    // Filter Demand Blocks
+    storedDemandOBs = storedDemandOBs.filter(ob => {
+      let crossCount = 0;
+      let wasInside = false;
+
+      for (let k = ob.startIndex + 1; k < data.length; k++) {
+        const bar = data[k];
+
+        // Rule 1: A candle body closes below the bottom of the demand block = Immediate Fail
+        if (bar.c < ob.bottom) return false;
+
+        // Rule 2: Price re-crosses/mitigates the zone a second time = Immediate Fail
+        if (bar.l < ob.bottom) {
+          if (!wasInside) {
+            crossCount++;
+            wasInside = true;
+          }
+        } else if (bar.l > ob.top) {
+          wasInside = false;
+        }
+
+        if (crossCount >= 2) return false;
+      }
+
+      // Check current live price tick
+      if (state.gold_price < ob.bottom) return false;
+
+      return true;
+    });
+
+    // Filter Supply Blocks
+    storedSupplyOBs = storedSupplyOBs.filter(ob => {
+      let crossCount = 0;
+      let wasInside = false;
+
+      for (let k = ob.startIndex + 1; k < data.length; k++) {
+        const bar = data[k];
+
+        // Rule 1: A candle body closes above the top of the supply block = Immediate Fail
+        if (bar.c > ob.top) return false;
+
+        // Rule 2: Price re-crosses/mitigates the zone a second time = Immediate Fail
+        if (bar.h > ob.top) {
+          if (!wasInside) {
+            crossCount++;
+            wasInside = true;
+          }
+        } else if (bar.h < ob.bottom) {
+          wasInside = false;
+        }
+
+        if (crossCount >= 2) return false;
+      }
+
+      // Check current live price tick
+      if (state.gold_price > ob.top) return false;
+
+      return true;
+    });
+  }
+
   function scanAndStoreOrderBlocks(data) {
     if (data.length < 15) return;
 
@@ -314,22 +378,29 @@
       const next2 = data[i + 2];
       const avgRange = (data[i-1].h - data[i-1].l + data[i-2].h - data[i-2].l) / 2 || 2;
 
-      // Bullish Demand OB
+      // Bullish Demand OB Setup
       const isBull = (next1.c > next1.o) && ((next1.c - next1.o) + (next2.c - next2.o) > avgRange * 1.4);
       if (current.c < current.o && isBull && (next2.c > current.h)) {
         const id = `dem_${i}_${current.l.toFixed(2)}`;
         const top = Math.max(current.o, current.c);
         const bottom = current.l;
 
-        let crossCount = 0, wasInside = false;
-        for (let k = i + 3; k < data.length; k++) {
-          const bar = data[k];
-          if (bar.l < bottom && !wasInside) { crossCount++; wasInside = true; }
-          else if (bar.l > top) { wasInside = false; }
-        }
-        if (crossCount >= 2) continue;
+        // Check if previously broken/mitigated
+        let failed = false;
+        let crosses = 0;
+        let wasInside = false;
 
-        if (!storedDemandOBs.some(ob => ob.id === id)) {
+        for (let k = i + 3; k < data.length; k++) {
+          if (data[k].c < bottom) { failed = true; break; }
+          if (data[k].l < bottom) {
+            if (!wasInside) { crosses++; wasInside = true; }
+          } else if (data[k].l > top) {
+            wasInside = false;
+          }
+          if (crosses >= 2) { failed = true; break; }
+        }
+
+        if (!failed && !storedDemandOBs.some(ob => ob.id === id)) {
           const rawK = current.quoteVol ? (current.quoteVol / 1000) : (current.v * 4.3);
           const distinctVol = parseFloat((rawK * 0.4 + (current.h - current.l) * 4.2 + 18.5).toFixed(3));
           const bodyRatio = Math.abs(current.c - current.o) / ((current.h - current.l) || 1);
@@ -339,26 +410,32 @@
             id: id, startIndex: i, top: top, bottom: bottom,
             volume: distinctVol, pct: distinctPct, tfName: state.tf_interval.toUpperCase()
           });
-          if (storedDemandOBs.length > 3) storedDemandOBs.shift();
+          if (storedDemandOBs.length > 2) storedDemandOBs.shift();
         }
       }
 
-      // Bearish Supply OB
+      // Bearish Supply OB Setup
       const isBear = (next1.c < next1.o) && ((next1.o - next1.c) + (next2.o - next2.c) > avgRange * 1.4);
       if (current.c > current.o && isBear && (next2.c < current.l)) {
         const id = `sup_${i}_${current.h.toFixed(2)}`;
         const top = current.h;
         const bottom = Math.min(current.o, current.c);
 
-        let crossCount = 0, wasInside = false;
-        for (let k = i + 3; k < data.length; k++) {
-          const bar = data[k];
-          if (bar.h > top && !wasInside) { crossCount++; wasInside = true; }
-          else if (bar.h < bottom) { wasInside = false; }
-        }
-        if (crossCount >= 2) continue;
+        let failed = false;
+        let crosses = 0;
+        let wasInside = false;
 
-        if (!storedSupplyOBs.some(ob => ob.id === id)) {
+        for (let k = i + 3; k < data.length; k++) {
+          if (data[k].c > top) { failed = true; break; }
+          if (data[k].h > top) {
+            if (!wasInside) { crosses++; wasInside = true; }
+          } else if (data[k].h < bottom) {
+            wasInside = false;
+          }
+          if (crosses >= 2) { failed = true; break; }
+        }
+
+        if (!failed && !storedSupplyOBs.some(ob => ob.id === id)) {
           const rawK = current.quoteVol ? (current.quoteVol / 1000) : (current.v * 4.3);
           const distinctVol = parseFloat((rawK * 0.4 + (current.h - current.l) * 3.8 + 15.2).toFixed(3));
           const bodyRatio = Math.abs(current.c - current.o) / ((current.h - current.l) || 1);
@@ -368,31 +445,15 @@
             id: id, startIndex: i, top: top, bottom: bottom,
             volume: distinctVol, pct: distinctPct, tfName: state.tf_interval.toUpperCase()
           });
-          if (storedSupplyOBs.length > 3) storedSupplyOBs.shift();
+          if (storedSupplyOBs.length > 2) storedSupplyOBs.shift();
         }
       }
     }
 
-    storedDemandOBs = storedDemandOBs.filter(ob => {
-      let crosses = 0, inside = false;
-      for (let k = ob.startIndex + 3; k < data.length; k++) {
-        if (data[k].l < ob.bottom && !inside) { crosses++; inside = true; }
-        else if (data[k].l > ob.top) { inside = false; }
-      }
-      return crosses < 2;
-    });
-
-    storedSupplyOBs = storedSupplyOBs.filter(ob => {
-      let crosses = 0, inside = false;
-      for (let k = ob.startIndex + 3; k < data.length; k++) {
-        if (data[k].h > ob.top && !inside) { crosses++; inside = true; }
-        else if (data[k].h < ob.bottom) { inside = false; }
-      }
-      return crosses < 2;
-    });
+    purgeInvalidatedOBs(data);
   }
 
-  // 3. Mathematical Confluence Crossing Engine (Only Two Distinct Highlighted Locations)
+  // 3. Mathematical Confluence Crossing Engine
   function computeStandardTrendlines(data) {
     if (data.length < 25) return { diagonals: [], confluences: [] };
 
@@ -485,7 +546,6 @@
     const bestSup = supCandidates.find(c => !c.isBroken) || supCandidates[0];
     if (bestSup) diagonals.push(bestSup);
 
-    // Precise intersection crossing calculation
     if (bestRes && bestSup && Math.abs(bestRes.slope - bestSup.slope) > 0.001) {
       const b1 = bestRes.y1 - bestRes.slope * bestRes.x1;
       const b2 = bestSup.y1 - bestSup.slope * bestSup.x1;
@@ -602,7 +662,7 @@
       ctx.fillText(p.toFixed(2), chartW + 8, y + 4);
     }
 
-    // 5. Order Blocks (Active / Unmitigated Only)
+    // 5. Draw Active Unmitigated Order Blocks
     storedSupplyOBs.forEach(ob => {
       const xStart = Math.max(0, getX(ob.startIndex));
       const yTop = getY(ob.top);
@@ -649,7 +709,7 @@
       }
     });
 
-    // 6. Draw Clean Structural Channel
+    // 6. Draw Trendlines
     const { diagonals, confluences } = computeStandardTrendlines(candleHistory);
     const lastCandleX = getX(candleHistory.length - 1);
 
@@ -698,7 +758,7 @@
       }
     });
 
-    // 7. Render Isolated Confluences (Only 2 Target Locations)
+    // 7. Render Isolated Confluences
     confluences.forEach(conf => {
       const cx = getX(conf.xIdx);
       const cy = getY(conf.price);
@@ -929,6 +989,9 @@
           if (state.gold_price > cur.h) cur.h = state.gold_price;
           if (state.gold_price < cur.l) cur.l = state.gold_price;
         }
+
+        // Live check: immediately purge any OBs violated by live price movement
+        purgeInvalidatedOBs(candleHistory);
       }
 
       if (data.e === "24hrTicker" && data.s === "EURUSDT") {
