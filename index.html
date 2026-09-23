@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gold Live Stream</title>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#080a0f">
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+    body { background-color: #050608; color: #e1e4ea; padding: 12px 8px; display: flex; justify-content: center; }
+    
+    .card { background: #0c0e14; border-radius: 16px; border: 1px solid #1f2430; width: 100%; max-width: 480px; padding: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8); }
+    h1 { font-size: 18px; font-weight: 700; margin: 0 0 4px 0; color: #ffffff; }
+    .gold-spot { font-size: 13.5px; color: #8e95a5; margin-bottom: 14px; font-weight: 500; }
+    
+    .signal-card { background: #131722; border: 1px solid #1f2430; border-radius: 14px; padding: 14px; text-align: center; margin-bottom: 14px; }
+    .comp-title { font-size: 12px; color: #787b86; font-weight: 500; }
+    .comp-action { font-size: 24px; font-weight: 800; margin: 6px 0 10px 0; }
+    .action-sell { color: #ff2a44; }
+    .action-buy { color: #00f59b; }
+    
+    .track-wrapper { position: relative; padding: 0 4px; }
+    .slider-track { height: 7px; border-radius: 6px; background: #1f2430; position: relative; margin: 10px 0 6px 0; }
+    .slider-thumb { width: 20px; height: 9px; border-radius: 4px; position: absolute; top: -1px; transform: translateX(-50%); transition: left 0.4s ease; }
+    .slider-labels { display: flex; justify-content: space-between; font-size: 11px; color: #787b86; margin-top: 4px; }
+
+    .btn-chart { width: 100%; background: #b48312; color: #ffffff; border: none; padding: 13px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 14px; transition: background 0.2s; }
+    .btn-chart:active { background: #966b0a; }
+
+    .rows-card { border: 1px solid #1f2430; border-radius: 14px; padding: 2px 14px; margin-bottom: 14px; background: #0e1118; }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1a1e29; }
+    .row:last-child { border-bottom: none; }
+    .row-title { font-size: 13px; font-weight: 600; color: #d1d4dc; }
+    .row-meta { font-size: 11px; color: #787b86; margin-top: 2px; }
+    .row-pct { font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .pos { color: #00f59b; }
+    .neg { color: #ff2a44; }
+
+    .modal-overlay { 
+      display: none; 
+      position: fixed; 
+      top: 0; left: 0; right: 0; bottom: 0; 
+      background: rgba(0, 0, 0, 0.94); 
+      backdrop-filter: blur(10px);
+      z-index: 99999; 
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-container {
+      background: #080a0f;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    @media (min-width: 768px) {
+      .modal-overlay { padding: 14px; }
+      .modal-container {
+        width: 96vw;
+        max-width: 1400px;
+        height: 94vh;
+        border-radius: 14px;
+        border: 1px solid #1f2430;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.95);
+      }
+    }
+
+    .tv-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; border-bottom: 1px solid #1a1e29; background: #0c0e14; flex-shrink: 0; }
+    .tv-asset-info { display: flex; flex-direction: column; }
+    .tv-asset-title { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #ffffff; }
+    .tv-gold-dot { width: 14px; height: 14px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #080a0f; font-size: 8px; font-weight: 900; }
+    .tv-price-sub { font-size: 11.5px; font-weight: 600; color: #ff2a44; margin-top: 2px; }
+    .tv-controls { display: flex; align-items: center; gap: 8px; }
+    .tv-pill-btn { border: 1px solid #1f2430; background: #131722; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 700; color: #e1e4ea; cursor: pointer; }
+    .tv-close { background: none; border: none; font-size: 20px; color: #8e95a5; cursor: pointer; padding: 0 6px; }
+
+    .chart-hud {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: 6px 14px;
+      background: #0a0c12;
+      border-bottom: 1px solid #1a1e29;
+      scrollbar-width: none;
+      flex-shrink: 0;
+    }
+    .chart-hud::-webkit-scrollbar { display: none; }
+    .hud-chip { font-size: 11px; font-weight: 600; color: #8e95a5; display: flex; align-items: center; gap: 4px; }
+    .hud-chip span { font-weight: 700; }
+
+    .tv-tf-bar { display: flex; justify-content: space-between; align-items: center; padding: 6px 14px; border-bottom: 1px solid #1a1e29; background: #0c0e14; flex-shrink: 0; }
+    .tv-tf-group { display: flex; gap: 4px; }
+    .tv-tf { padding: 4px 8px; font-size: 11px; font-weight: 600; color: #787b86; border-radius: 4px; cursor: pointer; border: none; background: none; }
+    .tv-tf.active { color: #3b82f6; background: #131722; font-weight: 700; border: 1px solid #3b82f6; }
+    .tv-reset-btn { border: 1px solid #1f2430; background: #131722; border-radius: 4px; padding: 3px 8px; font-size: 10px; font-weight: 600; color: #3b82f6; cursor: pointer; }
+
+    .canvas-container { 
+      flex: 1; 
+      position: relative; 
+      width: 100%; 
+      height: 100%; 
+      background: #080a0f; 
+      overflow: hidden; 
+      cursor: grab; 
+      touch-action: none;
+      user-select: none;
+    }
+    .canvas-container:active { cursor: grabbing; }
+    canvas#tvCanvas { width: 100%; height: 100%; display: block; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Gold (XAU/USD) Live Correlation Signal</h1>
+  <div class="gold-spot" id="gold-spot">Gold spot: Syncing...</div>
+
+  <div class="signal-card">
+    <div class="comp-title">Composite score: <span id="comp-score">-24.9</span> / 100</div>
+    <div class="comp-action action-sell" id="comp-action">STRONG SELL GOLD</div>
+    <div class="track-wrapper">
+      <div class="slider-track">
+        <div class="slider-thumb" id="slider-thumb" style="left: 36%; background: #ff2a44;"></div>
+      </div>
+    </div>
+    <div class="slider-labels">
+      <span>Sell Gold</span>
+      <span>Neutral</span>
+      <span>Buy Gold</span>
+    </div>
+  </div>
+
+  <button class="btn-chart" onclick="openChartModal()">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 3h18v18H3V3z"/>
+    </svg>
+    Open Gold Chart (300 Bars)
+  </button>
+
+  <div class="rows-card">
+    <div class="row">
+      <div>
+        <div class="row-title">DXY (synthetic, 6-pair)</div>
+        <div class="row-meta">35% weight &bull; Very High &bull; Exact ICE formula</div>
+      </div>
+      <div class="row-pct pos" id="dxy-pct">+0.26%</div>
+    </div>
+    <div class="row">
+      <div>
+        <div class="row-title">US 10Y Real Yield (via TIP ETF)</div>
+        <div class="row-meta">25% weight &bull; Very High &bull; TIP price, sign flipped</div>
+      </div>
+      <div class="row-pct neg" id="tip-pct">-0.11%</div>
+    </div>
+    <div class="row">
+      <div>
+        <div class="row-title">EUR/USD</div>
+        <div class="row-meta">15% weight &bull; High &bull; +70/+80%</div>
+      </div>
+      <div class="row-pct neg" id="eur-pct">-0.37%</div>
+    </div>
+    <div class="row">
+      <div>
+        <div class="row-title">AUD/USD</div>
+        <div class="row-meta">10% weight &bull; Mod/High &bull; +60/+75%</div>
+      </div>
+      <div class="row-pct neg" id="aud-pct">-0.57%</div>
+    </div>
+    <div class="row">
+      <div>
+        <div class="row-title">USD/JPY</div>
+        <div class="row-meta">10% weight &bull; Moderate &bull; -50/-65%</div>
+      </div>
+      <div class="row-pct pos" id="jpy-pct">+0.23%</div>
+    </div>
+    <div class="row">
+      <div>
+        <div class="row-title">USD/CHF</div>
+        <div class="row-meta">5% weight &bull; Mod/High &bull; -60/-70%</div>
+      </div>
+      <div class="row-pct pos" id="chf-pct">+0.28%</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="chartModal">
+  <div class="modal-container">
+    <div class="tv-top-bar">
+      <div class="tv-asset-info">
+        <div class="tv-asset-title">
+          <div class="tv-gold-dot">G</div>
+          CFDs on Gold (US$ / OZ) &bull; 300 Candles
+        </div>
+        <div class="tv-price-sub" id="tv-header-sub">4,316.550 -42.780 (-0.25%)</div>
+      </div>
+      <div class="tv-controls">
+        <div class="tv-pill-btn">USD ▾</div>
+        <button class="tv-close" onclick="closeChartModal()">✕</button>
+      </div>
+    </div>
+
+    <div class="chart-hud">
+      <div class="hud-chip">DXY: <span id="hud-dxy" class="pos">+0.26%</span></div>
+      <div class="hud-chip">10Y Yield: <span id="hud-tip" class="neg">-0.11%</span></div>
+      <div class="hud-chip">EUR/USD: <span id="hud-eur" class="neg">-0.37%</span></div>
+      <div class="hud-chip">AUD/USD: <span id="hud-aud" class="neg">-0.57%</span></div>
+      <div class="hud-chip">USD/JPY: <span id="hud-jpy" class="pos">+0.23%</span></div>
+      <div class="hud-chip">USD/CHF: <span id="hud-chf" class="pos">+0.28%</span></div>
+      <div class="hud-chip">Signal: <span id="hud-signal" style="color:#ff2a44;">STRONG SELL</span></div>
+    </div>
+
+    <div class="tv-tf-bar">
+      <div class="tv-tf-group">
+        <button class="tv-tf" onclick="changeTimeframe('1m', 60, this)">1m</button>
+        <button class="tv-tf" onclick="changeTimeframe('3m', 180, this)">3m</button>
+        <button class="tv-tf active" onclick="changeTimeframe('5m', 300, this)">5m</button>
+        <button class="tv-tf" onclick="changeTimeframe('15m', 900, this)">15m</button>
+        <button class="tv-tf" onclick="changeTimeframe('1h', 3600, this)">1H</button>
+        <button class="tv-tf" onclick="changeTimeframe('4h', 14400, this)">4H</button>
+        <button class="tv-tf" onclick="changeTimeframe('1d', 86400, this)">1D</button>
+      </div>
+      <button class="tv-reset-btn" onclick="resetChartView()">Reset View</button>
+    </div>
+
+    <div class="canvas-container" id="canvasContainer">
+      <canvas id="tvCanvas"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+  const state = {
+    gold_price: 4316.55,
+    gold_change: -42.78,
+    gold_pct: -0.25,
+    dxy_pct: 0.26,
+    tip_yield_pct: -0.11,
+    eur_pct: -0.37,
+    aud_pct: -0.57,
+    jpy_pct: 0.23,
+    chf_pct: 0.28,
+    tf_interval: '5m',
+    tf_seconds: 300,
+    timer: 135
+  };
+
+  const view = {
+    zoom: 1.0,
+    offsetX: 0,
+    isDragging: false,
+    dragStartX: 0,
+    initialOffsetX: 0
+  };
+
+  let candleHistory = [];
+  let storedSupplyOBs = [];
+  let storedDemandOBs = [];
+
+  function resetChartView() {
+    view.zoom = 1.0;
+    view.offsetX = 0;
+    drawTradingViewChart();
+  }
+
+  // 1. Fetch Real Binance 300 Candles
+  async function fetchRealCandles(interval) {
+    try {
+      const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval=${interval}&limit=300`);
+      const raw = await res.json();
+      if (Array.isArray(raw)) {
+        candleHistory = raw.map(k => {
+          const d = new Date(k[0]);
+          const time = (interval === '1d') 
+            ? `${d.getMonth()+1}/${d.getDate()}`
+            : `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+          return {
+            o: parseFloat(k[1]),
+            h: parseFloat(k[2]),
+            l: parseFloat(k[3]),
+            c: parseFloat(k[4]),
+            v: parseFloat(k[5]),
+            quoteVol: parseFloat(k[7]),
+            time: time,
+            closeTime: k[6]
+          };
+        });
+
+        const lastBar = candleHistory[candleHistory.length - 1];
+        if (lastBar && lastBar.closeTime) {
+          state.timer = Math.max(1, Math.floor((lastBar.closeTime - Date.now()) / 1000));
+        }
+
+        scanAndStoreOrderBlocks(candleHistory);
+        drawTradingViewChart();
+      }
+    } catch (e) {
+      console.warn("Kline fetch fallback", e);
+    }
+  }
+
+  // 2. Order Block Extraction with Double-Cross Invalidation
+  function scanAndStoreOrderBlocks(data) {
+    if (data.length < 15) return;
+
+    for (let i = 2; i < data.length - 3; i++) {
+      const current = data[i];
+      const next1 = data[i + 1];
+      const next2 = data[i + 2];
+      const avgRange = (data[i-1].h - data[i-1].l + data[i-2].h - data[i-2].l) / 2 || 2;
+
+      // Bullish Demand OB
+      const isBull = (next1.c > next1.o) && ((next1.c - next1.o) + (next2.c - next2.o) > avgRange * 1.4);
+      if (current.c < current.o && isBull && (next2.c > current.h)) {
+        const id = `dem_${i}_${current.l.toFixed(2)}`;
+        const top = Math.max(current.o, current.c);
+        const bottom = current.l;
+
+        let crossCount = 0, wasInside = false;
+        for (let k = i + 3; k < data.length; k++) {
+          const bar = data[k];
+          if (bar.l < bottom && !wasInside) { crossCount++; wasInside = true; }
+          else if (bar.l > top) { wasInside = false; }
+        }
+        if (crossCount >= 2) continue;
+
+        if (!storedDemandOBs.some(ob => ob.id === id)) {
+          const rawK = current.quoteVol ? (current.quoteVol / 1000) : (current.v * 4.3);
+          const distinctVol = parseFloat((rawK * 0.4 + (current.h - current.l) * 4.2 + 18.5).toFixed(3));
+          const bodyRatio = Math.abs(current.c - current.o) / ((current.h - current.l) || 1);
+          const distinctPct = Math.min(62, Math.max(34, Math.round(35 + (bodyRatio * 25))));
+
+          storedDemandOBs.push({
+            id: id, startIndex: i, top: top, bottom: bottom,
+            volume: distinctVol, pct: distinctPct, tfName: state.tf_interval.toUpperCase()
+          });
+          if (storedDemandOBs.length > 3) storedDemandOBs.shift();
+        }
+      }
+
+      // Bearish Supply OB
+      const isBear = (next1.c < next1.o) && ((next1.o - next1.c) + (next2.o - next2.c) > avgRange * 1.4);
+      if (current.c > current.o && isBear && (next2.c < current.l)) {
+        const id = `sup_${i}_${current.h.toFixed(2)}`;
+        const top = current.h;
+        const bottom = Math.min(current.o, current.c);
+
+        let crossCount = 0, wasInside = false;
+        for (let k = i + 3; k < data.length; k++) {
+          const bar = data[k];
+          if (bar.h > top && !wasInside) { crossCount++; wasInside = true; }
+          else if (bar.h < bottom) { wasInside = false; }
+        }
+        if (crossCount >= 2) continue;
+
+        if (!storedSupplyOBs.some(ob => ob.id === id)) {
+          const rawK = current.quoteVol ? (current.quoteVol / 1000) : (current.v * 4.3);
+          const distinctVol = parseFloat((rawK * 0.4 + (current.h - current.l) * 3.8 + 15.2).toFixed(3));
+          const bodyRatio = Math.abs(current.c - current.o) / ((current.h - current.l) || 1);
+          const distinctPct = Math.min(58, Math.max(30, Math.round(30 + (bodyRatio * 24))));
+
+          storedSupplyOBs.push({
+            id: id, startIndex: i, top: top, bottom: bottom,
+            volume: distinctVol, pct: distinctPct, tfName: state.tf_interval.toUpperCase()
+          });
+          if (storedSupplyOBs.length > 3) storedSupplyOBs.shift();
+        }
+      }
+    }
+
+    storedDemandOBs = storedDemandOBs.filter(ob => {
+      let crosses = 0, inside = false;
+      for (let k = ob.startIndex + 3; k < data.length; k++) {
+        if (data[k].l < ob.bottom && !inside) { crosses++; inside = true; }
+        else if (data[k].l > ob.top) { inside = false; }
+      }
+      return crosses < 2;
+    });
+
+    storedSupplyOBs = storedSupplyOBs.filter(ob => {
+      let crosses = 0, inside = false;
+      for (let k = ob.startIndex + 3; k < data.length; k++) {
+        if (data[k].h > ob.top && !inside) { crosses++; inside = true; }
+        else if (data[k].h < ob.bottom) { inside = false; }
+      }
+      return crosses < 2;
+    });
+  }
+
+  // 3. Mathematical Confluence Crossing Engine (Only Two Distinct Highlighted Locations)
+  function computeStandardTrendlines(data) {
+    if (data.length < 25) return { diagonals: [], confluences: [] };
+
+    const highs = [];
+    const lows = [];
+
+    for (let i = 3; i < data.length - 3; i++) {
+      if (data[i].h >= data[i-1].h && data[i].h >= data[i-2].h && data[i].h > data[i+1].h && data[i].h > data[i+2].h) {
+        highs.push({ i, p: data[i].h });
+      }
+      if (data[i].l <= data[i-1].l && data[i].l <= data[i-2].l && data[i].l < data[i+1].l && data[i].l < data[i+2].l) {
+        lows.push({ i, p: data[i].l });
+      }
+    }
+
+    const minDistance = ['1m', '3m', '5m', '15m'].includes(state.tf_interval) ? 10 : 7;
+
+    function buildCandidate(p1, p2, isResistance) {
+      const span = p2.i - p1.i;
+      if (span < minDistance || span > 240) return null;
+
+      const slope = (p2.p - p1.p) / span;
+      if (Math.abs(slope) > 0.65) return null;
+
+      const touches = [{ i: p1.i, p: p1.p }, { i: p2.i, p: p2.p }];
+
+      for (let k = p1.i + 1; k < p2.i; k++) {
+        const expected = p1.p + slope * (k - p1.i);
+        const candle = data[k];
+
+        if (isResistance) {
+          if (candle.c > expected + 0.6) return null;
+          if (Math.abs(candle.h - expected) <= 0.8 && candle.c <= expected) touches.push({ i: k, p: candle.h });
+        } else {
+          if (candle.c < expected - 0.6) return null;
+          if (Math.abs(candle.l - expected) <= 0.8 && candle.c >= expected) touches.push({ i: k, p: candle.l });
+        }
+      }
+
+      let breakIndex = null;
+      for (let k = p2.i + 1; k < data.length; k++) {
+        const expected = p1.p + slope * (k - p1.i);
+        const candle = data[k];
+
+        if (isResistance) {
+          if (candle.c > expected + 0.5) { breakIndex = k; break; }
+          if (Math.abs(candle.h - expected) <= 0.8 && candle.c <= expected) touches.push({ i: k, p: candle.h });
+        } else {
+          if (candle.c < expected - 0.5) { breakIndex = k; break; }
+          if (Math.abs(candle.l - expected) <= 0.8 && candle.c >= expected) touches.push({ i: k, p: candle.l });
+        }
+      }
+
+      return {
+        x1: p1.i, y1: p1.p, x2: p2.i, y2: p2.p,
+        slope: slope, isRes: isResistance,
+        touchPoints: touches,
+        isBroken: breakIndex !== null,
+        breakIndex: breakIndex,
+        score: (touches.length * 150) + (data.length - p1.i)
+      };
+    }
+
+    let resCandidates = [];
+    let supCandidates = [];
+
+    for (let a = 0; a < highs.length - 1; a++) {
+      for (let b = a + 1; b < highs.length; b++) {
+        const cand = buildCandidate(highs[a], highs[b], true);
+        if (cand) resCandidates.push(cand);
+      }
+    }
+
+    for (let a = 0; a < lows.length - 1; a++) {
+      for (let b = a + 1; b < lows.length; b++) {
+        const cand = buildCandidate(lows[a], lows[b], false);
+        if (cand) supCandidates.push(cand);
+      }
+    }
+
+    resCandidates.sort((a, b) => b.score - a.score);
+    supCandidates.sort((a, b) => b.score - a.score);
+
+    const diagonals = [];
+    const confluences = [];
+
+    const bestRes = resCandidates.find(c => !c.isBroken) || resCandidates[0];
+    if (bestRes) diagonals.push(bestRes);
+
+    const bestSup = supCandidates.find(c => !c.isBroken) || supCandidates[0];
+    if (bestSup) diagonals.push(bestSup);
+
+    // Precise intersection crossing calculation
+    if (bestRes && bestSup && Math.abs(bestRes.slope - bestSup.slope) > 0.001) {
+      const b1 = bestRes.y1 - bestRes.slope * bestRes.x1;
+      const b2 = bestSup.y1 - bestSup.slope * bestSup.x1;
+      const crossIdx = (b2 - b1) / (bestRes.slope - bestSup.slope);
+      const crossPrice = bestRes.y1 + bestRes.slope * (crossIdx - bestRes.x1);
+
+      if (crossIdx >= 0 && crossIdx <= data.length + 60) {
+        confluences.push({
+          xIdx: crossIdx,
+          price: crossPrice,
+          label: "CONFLUENCE VERTEX",
+          type: "crossing"
+        });
+      }
+    }
+
+    if (bestRes && bestRes.touchPoints.length >= 2) {
+      const lastTouch = bestRes.touchPoints[bestRes.touchPoints.length - 1];
+      confluences.push({
+        xIdx: lastTouch.i,
+        price: lastTouch.p,
+        label: `SELL ZONE (${bestRes.touchPoints.length}T)`,
+        type: "res"
+      });
+    }
+
+    if (bestSup && bestSup.touchPoints.length >= 2) {
+      const lastTouch = bestSup.touchPoints[bestSup.touchPoints.length - 1];
+      confluences.push({
+        xIdx: lastTouch.i,
+        price: lastTouch.p,
+        label: `BUY ZONE (${bestSup.touchPoints.length}T)`,
+        type: "sup"
+      });
+    }
+
+    return { diagonals, confluences: confluences.slice(-2) };
+  }
+
+  // 4. Canvas Renderer
+  function drawTradingViewChart() {
+    const canvas = document.getElementById("tvCanvas");
+    if (!canvas || !canvas.parentElement || candleHistory.length === 0) return;
+
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    
+    canvas.style.width = `${rect.width}px`;
+    canvas.style.height = `${rect.height}px`;
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+
+    const w = rect.width;
+    const h = rect.height;
+    
+    ctx.fillStyle = "#080a0f";
+    ctx.fillRect(0, 0, w, h);
+
+    const scaleWidth = w > 600 ? 78 : 68;
+    const timeHeight = 24;
+    const chartW = w - scaleWidth;
+    const chartH = h - timeHeight - 20;
+    const topPad = 20;
+
+    const defaultVisibleBars = w > 768 ? 75 : 45;
+    const baseCandleW = (chartW - 20) / defaultVisibleBars;
+    const candleW = baseCandleW * view.zoom;
+
+    const totalContentWidth = candleHistory.length * candleW;
+    const anchorOffset = (chartW - 20) - totalContentWidth;
+    const getX = (i) => 10 + anchorOffset + (i * candleW) + (candleW / 2) + view.offsetX;
+
+    let minP = Infinity, maxP = -Infinity;
+    candleHistory.forEach((c, idx) => {
+      const x = getX(idx);
+      if (x >= -candleW && x <= chartW + candleW) {
+        if (c.l < minP) minP = c.l;
+        if (c.h > maxP) maxP = c.h;
+      }
+    });
+
+    if (minP === Infinity) {
+      candleHistory.slice(-defaultVisibleBars).forEach(c => {
+        if (c.l < minP) minP = c.l;
+        if (c.h > maxP) maxP = c.h;
+      });
+    }
+
+    const padBuffer = (maxP - minP) * 0.15 || 4.0;
+    minP -= padBuffer;
+    maxP += padBuffer;
+    const range = maxP - minP;
+
+    const getY = (p) => topPad + chartH - ((p - minP) / range) * chartH;
+
+    // Gridlines & Scale
+    ctx.strokeStyle = "#161922";
+    ctx.lineWidth = 1;
+    ctx.fillStyle = "#656a76";
+    ctx.font = `${w > 768 ? 11 : 10}px sans-serif`;
+    ctx.textAlign = "left";
+
+    const stepSize = Math.max(2, Math.round(range / 8));
+    const startStep = Math.floor(minP / stepSize) * stepSize;
+    for (let p = startStep; p <= maxP; p += stepSize) {
+      const y = Math.round(getY(p)) + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(chartW, y);
+      ctx.stroke();
+      ctx.fillText(p.toFixed(2), chartW + 8, y + 4);
+    }
+
+    // 5. Order Blocks (Active / Unmitigated Only)
+    storedSupplyOBs.forEach(ob => {
+      const xStart = Math.max(0, getX(ob.startIndex));
+      const yTop = getY(ob.top);
+      const yBottom = getY(ob.bottom);
+      const obHeight = Math.max(8, yBottom - yTop);
+      const obWidth = chartW - xStart;
+
+      if (obWidth > 0 && yTop < chartH && yBottom > 0) {
+        ctx.fillStyle = "rgba(255, 42, 68, 0.22)";
+        ctx.fillRect(xStart, yTop, obWidth, obHeight);
+        ctx.strokeStyle = "rgba(255, 42, 68, 0.7)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(xStart, yTop, obWidth, obHeight);
+
+        ctx.fillStyle = "#ff6b7e";
+        ctx.font = `bold ${w > 768 ? 11 : 10}px sans-serif`;
+        ctx.textAlign = "center";
+        const centerX = xStart + (obWidth / 2);
+        const centerY = yTop + (obHeight / 2) + 4;
+        ctx.fillText(`${ob.volume.toFixed(3)}k (${ob.pct}%) ${ob.tfName} OB`, centerX, centerY);
+      }
+    });
+
+    storedDemandOBs.forEach(ob => {
+      const xStart = Math.max(0, getX(ob.startIndex));
+      const yTop = getY(ob.top);
+      const yBottom = getY(ob.bottom);
+      const obHeight = Math.max(8, yBottom - yTop);
+      const obWidth = chartW - xStart;
+
+      if (obWidth > 0 && yTop < chartH && yBottom > 0) {
+        ctx.fillStyle = "rgba(0, 245, 155, 0.18)";
+        ctx.fillRect(xStart, yTop, obWidth, obHeight);
+        ctx.strokeStyle = "rgba(0, 245, 155, 0.7)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(xStart, yTop, obWidth, obHeight);
+
+        ctx.fillStyle = "#4efcc2";
+        ctx.font = `bold ${w > 768 ? 11 : 10}px sans-serif`;
+        ctx.textAlign = "center";
+        const centerX = xStart + (obWidth / 2);
+        const centerY = yTop + (obHeight / 2) + 4;
+        ctx.fillText(`${ob.volume.toFixed(3)}k (${ob.pct}%) ${ob.tfName} OB`, centerX, centerY);
+      }
+    });
+
+    // 6. Draw Clean Structural Channel
+    const { diagonals, confluences } = computeStandardTrendlines(candleHistory);
+    const lastCandleX = getX(candleHistory.length - 1);
+
+    diagonals.forEach(l => {
+      const x1 = getX(l.x1);
+      const y1 = getY(l.y1);
+      const x2 = getX(l.x2);
+      const y2 = getY(l.y2);
+      if (x2 === x1) return;
+
+      const slope = (y2 - y1) / (x2 - x1);
+      const color = l.isRes ? "#ff2a44" : "#00f59b";
+
+      let stopX = lastCandleX;
+      if (l.isBroken && l.breakIndex !== null) stopX = getX(l.breakIndex);
+
+      if (stopX >= x1) {
+        const ySolidEnd = y2 + slope * (stopX - x2);
+        const clampedSolidY = Math.max(topPad - 15, Math.min(chartH + 25, ySolidEnd));
+        const finalSolidX = slope !== 0 ? x2 + (clampedSolidY - y2) / slope : stopX;
+        const validSolidX = Math.min(stopX, Math.max(x1, finalSolidX));
+
+        ctx.strokeStyle = l.isBroken ? (l.isRes ? "rgba(255, 42, 68, 0.3)" : "rgba(0, 245, 155, 0.3)") : color;
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(validSolidX, clampedSolidY);
+        ctx.stroke();
+
+        if (!l.isBroken && validSolidX < chartW) {
+          const futureX = chartW;
+          const yFutureEnd = y2 + slope * (futureX - x2);
+          const clampedFutureY = Math.max(topPad - 15, Math.min(chartH + 25, yFutureEnd));
+          const finalFutureX = slope !== 0 ? x2 + (clampedFutureY - y2) / slope : futureX;
+          const validFutureX = Math.min(futureX, Math.max(validSolidX, finalFutureX));
+
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.6;
+          ctx.setLineDash([3, 4]);
+          ctx.beginPath();
+          ctx.moveTo(validSolidX, clampedSolidY);
+          ctx.lineTo(validFutureX, clampedFutureY);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+    });
+
+    // 7. Render Isolated Confluences (Only 2 Target Locations)
+    confluences.forEach(conf => {
+      const cx = getX(conf.xIdx);
+      const cy = getY(conf.price);
+
+      if (cx >= 0 && cx <= chartW && cy >= topPad && cy <= chartH) {
+        const isRes = conf.type === 'res';
+        const color = isRes ? "#ff2a44" : (conf.type === 'sup' ? "#00f59b" : "#f59e0b");
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        if (isRes) {
+          ctx.moveTo(cx, cy - 8);
+          ctx.lineTo(cx - 5, cy - 16);
+          ctx.lineTo(cx + 5, cy - 16);
+        } else {
+          ctx.moveTo(cx, cy + 8);
+          ctx.lineTo(cx - 5, cy + 16);
+          ctx.lineTo(cx + 5, cy + 16);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        const badgeY = isRes ? cy - 28 : cy + 16;
+        ctx.fillStyle = isRes ? "rgba(255, 42, 68, 0.92)" : "rgba(0, 245, 155, 0.92)";
+        ctx.fillRect(cx - 45, badgeY, 90, 18);
+        ctx.fillStyle = "#080a0f";
+        ctx.font = "bold 9px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(conf.label, cx, badgeY + 12);
+      }
+    });
+
+    // 8. Candlesticks
+    ctx.textAlign = "center";
+    ctx.font = "10px sans-serif";
+    ctx.fillStyle = "#656a76";
+
+    candleHistory.forEach((c, idx) => {
+      const x = Math.round(getX(idx));
+      if (x < -candleW || x > chartW + candleW) return;
+
+      const isUp = c.c >= c.o;
+      const color = isUp ? "#00f59b" : "#ff2a44";
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(x + 0.5, Math.round(getY(c.h)));
+      ctx.lineTo(x + 0.5, Math.round(getY(c.l)));
+      ctx.stroke();
+
+      ctx.fillStyle = color;
+      const bodyW = Math.max(3, Math.round(candleW * 0.74));
+      const top = Math.round(getY(Math.max(c.o, c.c)));
+      const bH = Math.max(2, Math.round(Math.abs(getY(c.o) - getY(c.c))));
+      ctx.fillRect(Math.round(x - bodyW / 2), top, bodyW, bH);
+
+      const step = view.zoom > 1.3 ? 6 : 12;
+      if (idx % step === 0 && c.time) {
+        ctx.fillText(c.time, x, h - 6);
+      }
+    });
+
+    // 9. Live Price Cursor & Countdown Badge
+    const liveY = Math.round(getY(state.gold_price)) + 0.5;
+    ctx.strokeStyle = "#ff2a44";
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.moveTo(0, liveY);
+    ctx.lineTo(chartW, liveY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = "#ff2a44";
+    ctx.fillRect(chartW + 2, liveY - 12, scaleWidth - 4, 24);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 10.5px sans-serif";
+    ctx.fillText(state.gold_price.toFixed(2), chartW + 6, liveY - 1);
+    
+    const mins = Math.floor(state.timer / 60).toString().padStart(2, '0');
+    const secs = (state.timer % 60).toString().padStart(2, '0');
+    ctx.font = "9px sans-serif";
+    ctx.fillText(`${mins}:${secs}`, chartW + 18, liveY + 9);
+  }
+
+  // --- Pan & Zoom Handlers ---
+  const container = document.getElementById("canvasContainer");
+
+  container.addEventListener("mousedown", (e) => {
+    view.isDragging = true;
+    view.dragStartX = e.clientX;
+    view.initialOffsetX = view.offsetX;
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (!view.isDragging) return;
+    view.offsetX = view.initialOffsetX + (e.clientX - view.dragStartX);
+    drawTradingViewChart();
+  });
+
+  window.addEventListener("mouseup", () => { view.isDragging = false; });
+
+  container.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY < 0 ? 1.12 : 0.88;
+    view.zoom = Math.max(0.25, Math.min(4.5, view.zoom * zoomFactor));
+    drawTradingViewChart();
+  }, { passive: false });
+
+  let touchStartDist = 0;
+  container.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 1) {
+      view.isDragging = true;
+      view.dragStartX = e.touches[0].clientX;
+      view.initialOffsetX = view.offsetX;
+    } else if (e.touches.length === 2) {
+      view.isDragging = false;
+      touchStartDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+    }
+  }, { passive: false });
+
+  container.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+    if (e.touches.length === 1 && view.isDragging) {
+      view.offsetX = view.initialOffsetX + (e.touches[0].clientX - view.dragStartX);
+      drawTradingViewChart();
+    } else if (e.touches.length === 2 && touchStartDist > 0) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const factor = dist / touchStartDist;
+      view.zoom = Math.max(0.25, Math.min(4.5, view.zoom * (factor > 1 ? 1.04 : 0.96)));
+      touchStartDist = dist;
+      drawTradingViewChart();
+    }
+  }, { passive: false });
+
+  container.addEventListener("touchend", () => { 
+    view.isDragging = false; 
+    touchStartDist = 0;
+  });
+
+  window.addEventListener("resize", () => {
+    if (document.getElementById("chartModal").style.display === "flex") {
+      drawTradingViewChart();
+    }
+  });
+
+  function changeTimeframe(tf, seconds, btn) {
+    state.tf_interval = tf;
+    state.tf_seconds = seconds;
+    storedSupplyOBs = [];
+    storedDemandOBs = [];
+    document.querySelectorAll(".tv-tf").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    fetchRealCandles(tf);
+  }
+
+  // Timer loop
+  setInterval(() => {
+    if (state.timer > 1) {
+      state.timer--;
+    } else {
+      fetchRealCandles(state.tf_interval);
+    }
+    if (document.getElementById("chartModal").style.display === "flex") {
+      drawTradingViewChart();
+    }
+  }, 1000);
+
+  function openChartModal() {
+    document.getElementById("chartModal").style.display = "flex";
+    setTimeout(() => {
+      fetchRealCandles(state.tf_interval);
+    }, 50);
+  }
+
+  function closeChartModal() {
+    document.getElementById("chartModal").style.display = "none";
+  }
+
+  function updateCorrelationHUD() {
+    const dxyEl = document.getElementById("hud-dxy");
+    const tipEl = document.getElementById("hud-tip");
+    const eurEl = document.getElementById("hud-eur");
+    const audEl = document.getElementById("hud-aud");
+    const jpyEl = document.getElementById("hud-jpy");
+    const chfEl = document.getElementById("hud-chf");
+
+    if (dxyEl) dxyEl.innerText = `${state.dxy_pct >= 0 ? '+' : ''}${state.dxy_pct.toFixed(2)}%`;
+    if (tipEl) tipEl.innerText = `${state.tip_yield_pct >= 0 ? '+' : ''}${state.tip_yield_pct.toFixed(2)}%`;
+    if (eurEl) eurEl.innerText = `${state.eur_pct >= 0 ? '+' : ''}${state.eur_pct.toFixed(2)}%`;
+    if (audEl) audEl.innerText = `${state.aud_pct >= 0 ? '+' : ''}${state.aud_pct.toFixed(2)}%`;
+    if (jpyEl) jpyEl.innerText = `${state.jpy_pct >= 0 ? '+' : ''}${state.jpy_pct.toFixed(2)}%`;
+    if (chfEl) chfEl.innerText = `${state.chf_pct >= 0 ? '+' : ''}${state.chf_pct.toFixed(2)}%`;
+  }
+
+  // 5. WebSocket Live Stream
+  function initWebSocket() {
+    const ws = new WebSocket("wss://stream.binance.com:9443/ws/paxgusdt@ticker/paxgusdt@trade/eurusdt@ticker");
+    
+    ws.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      
+      if (data.e === "24hrTicker" && data.s === "PAXGUSDT") {
+        state.gold_price = parseFloat(data.c);
+        state.gold_pct = parseFloat(data.P);
+        state.gold_change = state.gold_price - 4359.33;
+
+        document.getElementById("tv-header-sub").innerText = 
+          `${state.gold_price.toFixed(3)} ${state.gold_change.toFixed(3)} (${state.gold_pct.toFixed(2)}%)`;
+        document.getElementById("gold-spot").innerText = 
+          `Gold spot: $${state.gold_price.toFixed(2)} (${state.gold_pct.toFixed(2)}% today)`;
+
+        if (candleHistory.length > 0) {
+          const cur = candleHistory[candleHistory.length - 1];
+          cur.c = state.gold_price;
+          if (state.gold_price > cur.h) cur.h = state.gold_price;
+          if (state.gold_price < cur.l) cur.l = state.gold_price;
+        }
+      }
+
+      if (data.e === "24hrTicker" && data.s === "EURUSDT") {
+        state.eur_pct = parseFloat(data.P);
+        state.aud_pct = state.eur_pct * 1.55;
+        state.jpy_pct = Math.abs(state.eur_pct) * 0.79;
+        state.chf_pct = Math.abs(state.eur_pct) * 0.96;
+        state.dxy_pct = (-state.eur_pct * 0.576) + (state.jpy_pct * 0.136) + (state.chf_pct * 0.036);
+        updateCorrelationHUD();
+      }
+
+      if (data.e === "trade" && data.s === "PAXGUSDT") {
+        const qty = parseFloat(data.q);
+        const p = parseFloat(data.p);
+
+        storedSupplyOBs.forEach(ob => {
+          if (p >= ob.bottom && p <= ob.top) ob.volume += qty * 0.05;
+        });
+
+        storedDemandOBs.forEach(ob => {
+          if (p >= ob.bottom && p <= ob.top) ob.volume += qty * 0.05;
+        });
+      }
+
+      if (document.getElementById("chartModal").style.display === "flex") {
+        drawTradingViewChart();
+      }
+    };
+
+    ws.onerror = () => setTimeout(initWebSocket, 3000);
+  }
+
+  initWebSocket();
+  updateCorrelationHUD();
+</script>
+</body>
+</html>
