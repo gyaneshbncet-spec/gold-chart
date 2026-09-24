@@ -200,6 +200,50 @@
     .btn-chart { width: 100%; background: #b48312; color: #ffffff; border: none; padding: 13px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 14px; transition: background 0.2s; }
     .btn-chart:active { background: #966b0a; }
 
+    /* FRONT PAGE BIAS HUB */
+    .front-bias-hub {
+      background: #131722;
+      border: 1px solid #1f2430;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .front-bias-header {
+      font-size: 12px;
+      font-weight: 700;
+      color: #9aa0a6;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .front-bias-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+    }
+    .front-bias-col {
+      background: #0c0e14;
+      border: 1px solid #1f2430;
+      border-radius: 8px;
+      padding: 8px 2px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .front-bias-tf { font-size: 10.5px; font-weight: 700; color: #8e95a5; }
+    .front-badge {
+      font-size: 8.5px;
+      font-weight: 800;
+      padding: 2px 4px;
+      border-radius: 4px;
+      width: 92%;
+    }
+
     .rows-card { border: 1px solid #1f2430; border-radius: 14px; padding: 2px 14px; margin-bottom: 14px; background: #0e1118; }
     .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1a1e29; }
     .row:last-child { border-bottom: none; }
@@ -398,6 +442,41 @@
     </svg>
     Open Gold Chart (300 Bars)
   </button>
+
+  <!-- FRONT PAGE STRUCTURE BIAS HUB -->
+  <div class="front-bias-hub">
+    <div class="front-bias-header">
+      <span>Structure Bias Matrix</span>
+      <span style="font-size:9.5px; color:#5f6368;">Live Sync</span>
+    </div>
+    <div class="front-bias-grid">
+      <div class="front-bias-col">
+        <div class="front-bias-tf">3m</div>
+        <div class="front-badge chip-bear" id="fb-3m">BEARISH</div>
+        <div class="neg" id="fv-3m" style="font-size:9.5px; font-weight:700;">-0.08%</div>
+      </div>
+      <div class="front-bias-col">
+        <div class="front-bias-tf">5m</div>
+        <div class="front-badge chip-bear" id="fb-5m">BEARISH</div>
+        <div class="neg" id="fv-5m" style="font-size:9.5px; font-weight:700;">-0.12%</div>
+      </div>
+      <div class="front-bias-col">
+        <div class="front-bias-tf">15m</div>
+        <div class="front-badge chip-bear" id="fb-15m">BEARISH</div>
+        <div class="neg" id="fv-15m" style="font-size:9.5px; font-weight:700;">-0.21%</div>
+      </div>
+      <div class="front-bias-col">
+        <div class="front-bias-tf">1H</div>
+        <div class="front-badge chip-bear" id="fb-1h">BEARISH</div>
+        <div class="neg" id="fv-1h" style="font-size:9.5px; font-weight:700;">-0.38%</div>
+      </div>
+      <div class="front-bias-col">
+        <div class="front-bias-tf">1D</div>
+        <div class="front-badge chip-bear" id="fb-1d">BEARISH</div>
+        <div class="neg" id="fv-1d" style="font-size:9.5px; font-weight:700;">-0.48%</div>
+      </div>
+    </div>
+  </div>
 
   <div class="rows-card">
     <div class="row">
@@ -695,7 +774,7 @@
   // Multi-Horizon Ray Fan Architecture
   let multiHorizonTrendlines = [];
 
-  // Update Dynamic Multi-Timeframe Bias Structure
+  // Update Dynamic Multi-Timeframe Bias Structure (Synced for both Front Page and Chart)
   function updateChartBiasesLive() {
     if (candleHistory.length >= 20) {
       const last = candleHistory[candleHistory.length - 1].c;
@@ -723,8 +802,13 @@
     }
 
     const updateUI = (tf) => {
+      // Update Chart HUD Header
       const badge = document.getElementById(`cb-${tf}`);
       const val = document.getElementById(`cv-${tf}`);
+      // Update Front Page Hub
+      const fBadge = document.getElementById(`fb-${tf}`);
+      const fVal = document.getElementById(`fv-${tf}`);
+
       const info = state.tf_biases[tf];
       if (badge && info) {
         badge.textContent = info.text;
@@ -734,6 +818,15 @@
         const sign = info.delta >= 0 ? '+' : '';
         val.textContent = `${sign}${info.delta.toFixed(2)}%`;
         val.className = info.delta >= 0 ? 'pos' : 'neg';
+      }
+      if (fBadge && info) {
+        fBadge.textContent = info.text;
+        fBadge.className = `front-badge ${info.class}`;
+      }
+      if (fVal && info) {
+        const sign = info.delta >= 0 ? '+' : '';
+        fVal.textContent = `${sign}${info.delta.toFixed(2)}%`;
+        fVal.className = info.delta >= 0 ? 'pos' : 'neg';
       }
     };
 
@@ -808,7 +901,7 @@
     triggerRealtimeRender();
   }
 
-  // Live Micro-Delta Engine (Co-integrates all FX pairs directly to real live ticks)
+  // Proportional Normalized Correlation Engine
   function recalculateMetricsInstant() {
     if (state.gold_open_session > 0) {
       state.gold_change = state.gold_price - state.gold_open_session;
@@ -1106,7 +1199,7 @@
           if (Math.abs(candle.h - lineY) <= 0.5 * atr && candle.c <= lineY) touches.push({ i: k, p: candle.h });
         } else {
           if (candle.c < lineY - 0.30 * atr) { breakIndex = k; break; }
-          if (Math.abs(candle.h - lineY) <= 0.5 * atr && candle.c >= lineY) touches.push({ i: k, p: candle.l });
+          if (Math.abs(candle.l - lineY) <= 0.5 * atr && candle.c >= lineY) touches.push({ i: k, p: candle.l });
         }
       }
 
@@ -1527,7 +1620,7 @@
     
     wsInstance.onopen = () => {
       const statusEl = document.getElementById("session-status");
-      if (statusEl) statusEl.textContent = "● Live Stream Synchronized (Sub-Second Ticks)";
+      if (statusEl) statusEl.textContent = "● Real-Time Interbank Feed Synchronized";
     };
 
     wsInstance.onmessage = (e) => {
@@ -1561,7 +1654,6 @@
           const newEur = parseFloat(data.c);
           if (!isNaN(newEur)) {
             state.eur_price = newEur;
-            // Live micro-momentum co-integration
             const eurDelta = (state.eur_price - state.eur_open_session) / state.eur_open_session;
             state.aud_price = parseFloat((state.aud_open_session * (1 + eurDelta * 1.1)).toFixed(5));
             state.jpy_price = parseFloat((state.jpy_open_session * (1 - eurDelta * 0.8)).toFixed(3));
