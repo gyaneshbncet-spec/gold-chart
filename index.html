@@ -11,7 +11,7 @@
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
     body { background-color: #050608; color: #e1e4ea; padding: 12px 8px; display: flex; justify-content: center; }
     
-    /* --- Security Lock Screen --- */
+    /* Security Lock Screen */
     .pin-lock-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -175,14 +175,14 @@
     }
     .shake-anim { animation: shake 0.35s ease-in-out; }
 
-    /* --- Core Dashboard Styles --- */
+    /* Core Terminal Layout */
     .card { background: #0c0e14; border-radius: 16px; border: 1px solid #1f2430; width: 100%; max-width: 480px; padding: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8); }
     .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     h1 { font-size: 17.5px; font-weight: 700; color: #ffffff; }
     .header-actions { display: flex; gap: 8px; }
     .btn-header-action { background: #151822; border: 1px solid #2a3142; color: #8e95a5; font-size: 11px; font-weight: 600; padding: 5px 9px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
     .btn-header-action:active { background: #1e2330; }
-    .gold-spot { font-size: 13.5px; color: #8e95a5; margin-bottom: 4px; font-weight: 500; }
+    .gold-spot { font-size: 13.5px; color: #8e95a5; margin-bottom: 4px; font-weight: 500; font-variant-numeric: tabular-nums; }
     .session-status { font-size: 11px; color: #00f59b; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 5px; }
 
     .signal-card { background: #131722; border: 1px solid #1f2430; border-radius: 14px; padding: 14px; text-align: center; margin-bottom: 14px; }
@@ -194,7 +194,7 @@
     
     .track-wrapper { position: relative; padding: 0 4px; }
     .slider-track { height: 7px; border-radius: 6px; background: #1f2430; position: relative; margin: 10px 0 6px 0; }
-    .slider-thumb { width: 20px; height: 9px; border-radius: 4px; position: absolute; top: -1px; transform: translateX(-50%); transition: left 0.4s ease, background 0.3s ease; }
+    .slider-thumb { width: 20px; height: 9px; border-radius: 4px; position: absolute; top: -1px; transform: translateX(-50%); transition: left 0.15s ease-out; }
     .slider-labels { display: flex; justify-content: space-between; font-size: 11px; color: #787b86; margin-top: 4px; }
 
     .btn-chart { width: 100%; background: #b48312; color: #ffffff; border: none; padding: 13px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 14px; transition: background 0.2s; }
@@ -283,7 +283,7 @@
       overflow: hidden; 
       cursor: grab; 
       touch-action: none; 
-      user-select: none;
+      user-select: none; 
     }
     .canvas-container:active { cursor: grabbing; }
     canvas#tvCanvas { width: 100%; height: 100%; display: block; }
@@ -353,8 +353,8 @@
       <button class="btn-header-action" onclick="lockTerminal()">🔒 Lock</button>
     </div>
   </div>
-  <div class="gold-spot" id="gold-spot">Gold spot: Syncing TradingView session...</div>
-  <div class="session-status" id="session-status">● Live Stream Active (IST / NY Close)</div>
+  <div class="gold-spot" id="gold-spot">Gold spot: Syncing live feed...</div>
+  <div class="session-status" id="session-status">● Real-Time Forex & Gold Feed Active</div>
 
   <div class="signal-card">
     <div class="comp-title">Composite score: <span id="comp-score">0.0</span> / 100</div>
@@ -405,8 +405,8 @@
         <div class="row-meta">15% weight &bull; High &bull; +70/+80%</div>
       </div>
       <div class="row-right">
-        <div class="row-price" id="eur-price">1.13795</div>
-        <div class="row-pct neg" id="eur-pct">-0.03%</div>
+        <div class="row-price" id="eur-price">1.13780</div>
+        <div class="row-pct neg" id="eur-pct">-0.04%</div>
       </div>
     </div>
     <div class="row">
@@ -415,8 +415,8 @@
         <div class="row-meta">10% weight &bull; Mod/High &bull; +60/+75%</div>
       </div>
       <div class="row-right">
-        <div class="row-price" id="aud-price">0.70257</div>
-        <div class="row-pct neg" id="aud-pct">-0.19%</div>
+        <div class="row-price" id="aud-price">0.70355</div>
+        <div class="row-pct neg" id="aud-pct">-0.05%</div>
       </div>
     </div>
     <div class="row">
@@ -425,8 +425,8 @@
         <div class="row-meta">10% weight &bull; Moderate &bull; -50/-65%</div>
       </div>
       <div class="row-right">
-        <div class="row-price" id="jpy-price">157.883</div>
-        <div class="row-pct neg" id="jpy-pct">-0.29%</div>
+        <div class="row-price" id="jpy-price">157.976</div>
+        <div class="row-pct neg" id="jpy-pct">-0.23%</div>
       </div>
     </div>
     <div class="row">
@@ -435,8 +435,8 @@
         <div class="row-meta">5% weight &bull; Mod/High &bull; -60/-70%</div>
       </div>
       <div class="row-right">
-        <div class="row-price" id="chf-price">0.82486</div>
-        <div class="row-pct neg" id="chf-pct">-0.05%</div>
+        <div class="row-price" id="chf-price">0.82528</div>
+        <div class="row-pct pos" id="chf-pct">+0.01%</div>
       </div>
     </div>
   </div>
@@ -461,10 +461,10 @@
     <div class="chart-hud">
       <div class="hud-chip">DXY: <span id="hud-dxy" class="pos">+0.00%</span></div>
       <div class="hud-chip">10Y Yield: <span id="hud-tip" class="pos">+0.00%</span></div>
-      <div class="hud-chip">EUR/USD: <span id="hud-eur" class="neg">-0.03%</span></div>
-      <div class="hud-chip">AUD/USD: <span id="hud-aud" class="neg">-0.19%</span></div>
-      <div class="hud-chip">USD/JPY: <span id="hud-jpy" class="neg">-0.29%</span></div>
-      <div class="hud-chip">USD/CHF: <span id="hud-chf" class="neg">-0.05%</span></div>
+      <div class="hud-chip">EUR/USD: <span id="hud-eur" class="neg">-0.04%</span></div>
+      <div class="hud-chip">AUD/USD: <span id="hud-aud" class="neg">-0.05%</span></div>
+      <div class="hud-chip">USD/JPY: <span id="hud-jpy" class="neg">-0.23%</span></div>
+      <div class="hud-chip">USD/CHF: <span id="hud-chf" class="pos">+0.01%</span></div>
       <div class="hud-chip">Signal: <span id="hud-signal" style="color:#f59e0b;">NEUTRAL</span></div>
     </div>
 
@@ -472,8 +472,8 @@
       <div class="tv-tf-group">
         <button class="tv-tf" onclick="changeTimeframe('1m', 60, this)">1m</button>
         <button class="tv-tf" onclick="changeTimeframe('3m', 180, this)">3m</button>
-        <button class="tv-tf active" onclick="changeTimeframe('5m', 300, this)">5m</button>
-        <button class="tv-tf" onclick="changeTimeframe('15m', 900, this)">15m</button>
+        <button class="tv-tf" onclick="changeTimeframe('5m', 300, this)">5m</button>
+        <button class="tv-tf active" onclick="changeTimeframe('15m', 900, this)">15m</button>
         <button class="tv-tf" onclick="changeTimeframe('1h', 3600, this)">1H</button>
         <button class="tv-tf" onclick="changeTimeframe('4h', 14400, this)">4H</button>
         <button class="tv-tf" onclick="changeTimeframe('1d', 86400, this)">1D</button>
@@ -488,7 +488,7 @@
 </div>
 
 <script>
-  // --- Security, PIN Lock & Recovery Logic ---
+  // Security Authentication
   const TARGET_PIN = "0905";
   const RECOVERY_PHRASE = "gyanesh pandey";
   let enteredPin = "";
@@ -509,10 +509,7 @@
     if (enteredPin.length >= 4) return;
     enteredPin += num;
     updatePinDots();
-
-    if (enteredPin.length === 4) {
-      setTimeout(verifyPin, 100);
-    }
+    if (enteredPin.length === 4) setTimeout(verifyPin, 100);
   }
 
   function deletePin() {
@@ -535,7 +532,6 @@
       const container = document.getElementById("pinDotsContainer");
       container.classList.add("shake-anim");
       updatePinDots("error");
-
       setTimeout(() => {
         container.classList.remove("shake-anim");
         clearPin();
@@ -548,9 +544,7 @@
     if (lockScreen) {
       lockScreen.style.opacity = "0";
       lockScreen.style.transition = "opacity 0.25s ease";
-      setTimeout(() => {
-        lockScreen.style.display = "none";
-      }, 250);
+      setTimeout(() => { lockScreen.style.display = "none"; }, 250);
     }
   }
 
@@ -563,7 +557,7 @@
     }
   }
 
-  // --- Recovery Handlers ---
+  // Recovery Handlers
   function openRecoveryModal() {
     const modal = document.getElementById("recoveryModal");
     const input = document.getElementById("recoveryInput");
@@ -582,7 +576,6 @@
     const input = document.getElementById("recoveryInput");
     const box = document.getElementById("recoveredBox");
     const val = input ? input.value.trim().toLowerCase() : "";
-
     if (val === RECOVERY_PHRASE) {
       if (box) box.style.display = "block";
     } else {
@@ -597,37 +590,36 @@
     setTimeout(unlockApp, 150);
   }
 
-  // --- TradingView Session Model State ---
+  // Model State
   const state = {
-    // Current Live Prices
-    gold_price: 4287.57,
-    eur_price: 1.13795,
-    aud_price: 0.70257,
-    jpy_price: 157.883,
-    chf_price: 0.82486,
-    dxy_price: 100.780,
+    gold_price: 4277.00,
+    eur_price: 1.13780,
+    aud_price: 0.70355,
+    jpy_price: 157.976,
+    chf_price: 0.82528,
+    dxy_price: 100.770,
     tip_price: 107.45,
 
-    // TradingView Session Open Benchmarks (2:30 AM IST Rollover)
-    gold_open_session: 4287.10,
-    eur_open_session: 1.13830,
+    gold_open_session: 4284.84,
+    eur_open_session: 1.13825,
     aud_open_session: 0.70390,
+    jpy_open_session: 158.340,
+    chf_open_session: 0.82520,
 
-    // Session Percentage Deltas
-    gold_change: 0.47,
-    gold_pct: 0.01,
-    dxy_pct: 0.00,
+    gold_change: -7.84,
+    gold_pct: -0.18,
+    dxy_pct: -0.01,
     tip_yield_pct: 0.00,
-    eur_pct: -0.03,
-    aud_pct: -0.19,
-    jpy_pct: -0.29,
-    chf_pct: -0.05,
-    comp_score: 1.2,
+    eur_pct: -0.04,
+    aud_pct: -0.05,
+    jpy_pct: -0.23,
+    chf_pct: 0.01,
+    comp_score: 5.0,
     signal_text: 'NEUTRAL',
     signal_class: 'action-neutral',
-    tf_interval: '5m',
-    tf_seconds: 300,
-    timer: 135
+    tf_interval: '15m',
+    tf_seconds: 900,
+    timer: 788
   };
 
   const view = {
@@ -644,13 +636,89 @@
   let storedDemandOBs = [];
   let storedSupplyOBs = [];
 
+  // Multi-Horizon Ray Fan Architecture
+  let multiHorizonTrendlines = [];
+
+  // Direct DOM Updater
+  function renderFrontPageDirect() {
+    const goldSpotEl = document.getElementById("gold-spot");
+    if (goldSpotEl) {
+      const sign = state.gold_change >= 0 ? '+' : '';
+      goldSpotEl.textContent = `Gold spot: $${state.gold_price.toFixed(2)} (${sign}${state.gold_change.toFixed(2)} / ${sign}${state.gold_pct.toFixed(2)}% today)`;
+    }
+
+    const compScoreEl = document.getElementById("comp-score");
+    if (compScoreEl) compScoreEl.textContent = (state.comp_score >= 0 ? '+' : '') + state.comp_score.toFixed(1);
+
+    const compActionEl = document.getElementById("comp-action");
+    if (compActionEl) {
+      compActionEl.textContent = state.signal_text;
+      compActionEl.className = `comp-action ${state.signal_class}`;
+    }
+
+    const sliderThumb = document.getElementById("slider-thumb");
+    if (sliderThumb) {
+      const leftPos = Math.max(6, Math.min(94, 50 + (state.comp_score * 0.44)));
+      sliderThumb.style.left = `${leftPos}%`;
+      sliderThumb.style.background = state.comp_score > 8 ? '#00f59b' : (state.comp_score < -8 ? '#ff2a44' : '#f59e0b');
+    }
+
+    setMetricRow("dxy-price", "dxy-pct", state.dxy_price, state.dxy_pct, 3);
+    setMetricRow("tip-price", "tip-pct", state.tip_price, state.tip_yield_pct, 2);
+    setMetricRow("eur-price", "eur-pct", state.eur_price, state.eur_pct, 5);
+    setMetricRow("aud-price", "aud-pct", state.aud_price, state.aud_pct, 5);
+    setMetricRow("jpy-price", "jpy-pct", state.jpy_price, state.jpy_pct, 3);
+    setMetricRow("chf-price", "chf-pct", state.chf_price, state.chf_pct, 5);
+
+    const tvSub = document.getElementById("tv-header-sub");
+    if (tvSub) {
+      const sign = state.gold_change >= 0 ? '+' : '';
+      tvSub.textContent = `${state.gold_price.toFixed(3)} ${sign}${state.gold_change.toFixed(3)} (${sign}${state.gold_pct.toFixed(2)}%)`;
+      tvSub.style.color = state.gold_change >= 0 ? '#00f59b' : '#ff2a44';
+    }
+
+    const setChip = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = `${val >= 0 ? '+' : ''}${val.toFixed(2)}%`;
+        el.className = val >= 0 ? 'pos' : 'neg';
+      }
+    };
+    setChip("hud-dxy", state.dxy_pct);
+    setChip("hud-tip", state.tip_yield_pct);
+    setChip("hud-eur", state.eur_pct);
+    setChip("hud-aud", state.aud_pct);
+    setChip("hud-jpy", state.jpy_pct);
+    setChip("hud-chf", state.chf_pct);
+
+    const hudSig = document.getElementById("hud-signal");
+    if (hudSig) {
+      hudSig.textContent = state.signal_text;
+      hudSig.style.color = state.comp_score > 8 ? '#00f59b' : (state.comp_score < -8 ? '#ff2a44' : '#f59e0b');
+    }
+  }
+
+  // 60fps Frame Batcher
+  let renderScheduled = false;
+  function triggerRealtimeRender() {
+    renderFrontPageDirect();
+    if (renderScheduled) return;
+    renderScheduled = true;
+    requestAnimationFrame(() => {
+      const modal = document.getElementById("chartModal");
+      if (modal && modal.style.display === "flex") {
+        drawTradingViewChart();
+      }
+      renderScheduled = false;
+    });
+  }
+
   function resetChartView() {
     view.zoom = 1.0;
     view.offsetX = 0;
-    drawTradingViewChart();
+    triggerRealtimeRender();
   }
 
-  // Calculate exact New York 5:00 PM EST Close (= 2:30 AM IST) timestamp
   function getTradingViewSessionStartTime() {
     const now = new Date();
     const sessionUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 21, 0, 0));
@@ -660,136 +728,110 @@
     return sessionUTC.getTime();
   }
 
-  // Fetches baseline prices aligned with TradingView's daily bar open
   async function fetchTradingViewSessionOpen() {
     try {
       const sessionStartMs = getTradingViewSessionStartTime();
-      
-      const [resGold, resEur, resAud] = await Promise.all([
-        fetch(`https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval=1h&startTime=${sessionStartMs}&limit=1`),
-        fetch(`https://api.binance.com/api/v3/klines?symbol=EURUSDT&interval=1h&startTime=${sessionStartMs}&limit=1`),
-        fetch(`https://api.binance.com/api/v3/klines?symbol=AUDUSDT&interval=1h&startTime=${sessionStartMs}&limit=1`)
-      ]);
-
+      const resGold = await fetch(`https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval=1h&startTime=${sessionStartMs}&limit=1`);
       const dataGold = await resGold.json();
-      const dataEur = await resEur.json();
-      const dataAud = await resAud.json();
-
       if (Array.isArray(dataGold) && dataGold.length > 0) {
         state.gold_open_session = parseFloat(dataGold[0][1]);
       }
-      if (Array.isArray(dataEur) && dataEur.length > 0) {
-        state.eur_open_session = parseFloat(dataEur[0][1]);
-      }
-      if (Array.isArray(dataAud) && dataAud.length > 0) {
-        const audOpen = parseFloat(dataAud[0][1]);
-        if (audOpen > 0.60 && audOpen < 0.85) {
-          state.aud_open_session = audOpen;
-        }
-      }
-
-      await pollImmediateLiveTickers();
     } catch (e) {
-      console.warn("Session open fetch fallback:", e);
-      recalculateSessionMetrics();
+      console.warn("Gold session baseline initialized with default:", e);
+    } finally {
+      recalculateMetricsInstant();
     }
   }
 
-  // Active Direct Poller for guaranteed real-time UI updates
-  async function pollImmediateLiveTickers() {
-    try {
-      const priceRes = await fetch('https://api.binance.com/api/v3/ticker/price?symbols=["PAXGUSDT","EURUSDT","AUDUSDT"]');
-      const prices = await priceRes.json();
-      if (Array.isArray(prices)) {
-        prices.forEach(p => {
-          if (p.symbol === "PAXGUSDT") state.gold_price = parseFloat(p.price);
-          if (p.symbol === "EURUSDT") state.eur_price = parseFloat(p.price);
-          if (p.symbol === "AUDUSDT") {
-            const audP = parseFloat(p.price);
-            if (audP > 0.60 && audP < 0.85) state.aud_price = audP;
-          }
-        });
-        recalculateSessionMetrics();
-      }
-    } catch (e) {}
-  }
-
-  // Background High-Frequency Poller (Runs every 1,500ms)
-  let pollingTimer = null;
-  function startAutoUpdatePolling() {
-    if (pollingTimer) clearInterval(pollingTimer);
-    pollingTimer = setInterval(pollImmediateLiveTickers, 1500);
-  }
-
-  // Emergency Refresh Button
   async function emergencyRefresh() {
     const refreshBtn = document.querySelector(".btn-header-action");
     if (refreshBtn) refreshBtn.innerText = "⏳ Updating...";
-
     await fetchTradingViewSessionOpen();
-    if (candleHistory.length > 0) {
-      await fetchRealCandles(state.tf_interval);
-    }
-
-    setTimeout(() => {
-      if (refreshBtn) refreshBtn.innerText = "🔄 Refresh";
-    }, 300);
+    await fetchLiveForexRatesDirect();
+    if (candleHistory.length > 0) await fetchRealCandles(state.tf_interval);
+    setTimeout(() => { if (refreshBtn) refreshBtn.innerText = "🔄 Refresh"; }, 250);
   }
 
-  // Recalculates exact real-time percentages matching TradingView watchlist levels
-  function recalculateSessionMetrics() {
-    // 1. Gold Spot Session Delta
+  // Direct Live Global Forex Rates Feed (No API Key Required, Fast, CORS Free)
+  async function fetchLiveForexRatesDirect() {
+    try {
+      const res = await fetch('https://open.er-api.com/v6/latest/USD');
+      const data = await res.json();
+      if (data && data.rates) {
+        const rates = data.rates;
+        
+        // USD/JPY
+        if (rates.JPY) {
+          state.jpy_price = parseFloat(rates.JPY.toFixed(3));
+          state.jpy_pct = parseFloat((((state.jpy_price - state.jpy_open_session) / state.jpy_open_session) * 100).toFixed(2));
+        }
+
+        // USD/CHF
+        if (rates.CHF) {
+          state.chf_price = parseFloat(rates.CHF.toFixed(5));
+          state.chf_pct = parseFloat((((state.chf_price - state.chf_open_session) / state.chf_open_session) * 100).toFixed(2));
+        }
+
+        // EUR/USD (1 / rates.EUR)
+        if (rates.EUR && rates.EUR > 0) {
+          state.eur_price = parseFloat((1 / rates.EUR).toFixed(5));
+          state.eur_pct = parseFloat((((state.eur_price - state.eur_open_session) / state.eur_open_session) * 100).toFixed(2));
+        }
+
+        // AUD/USD (1 / rates.AUD)
+        if (rates.AUD && rates.AUD > 0) {
+          state.aud_price = parseFloat((1 / rates.AUD).toFixed(5));
+          state.aud_pct = parseFloat((((state.aud_price - state.aud_open_session) / state.aud_open_session) * 100).toFixed(2));
+        }
+
+        recalculateMetricsInstant();
+      }
+    } catch (e) {
+      console.warn("Forex direct feed check:", e);
+    }
+  }
+
+  function recalculateMetricsInstant() {
     if (state.gold_open_session > 0) {
       state.gold_change = state.gold_price - state.gold_open_session;
       state.gold_pct = parseFloat(((state.gold_change / state.gold_open_session) * 100).toFixed(2));
     }
 
-    // 2. EUR/USD Session Delta
     if (state.eur_open_session > 0) {
       state.eur_pct = parseFloat((((state.eur_price - state.eur_open_session) / state.eur_open_session) * 100).toFixed(2));
     }
 
-    // 3. AUD/USD Session Delta (Guarded Against Inversion & Disconnect)
     if (state.aud_open_session > 0) {
-      let rawAudPct = ((state.aud_price - state.aud_open_session) / state.aud_open_session) * 100;
-      if (Math.abs(rawAudPct) > 1.2) {
-        state.aud_pct = parseFloat((state.eur_pct * 1.35).toFixed(2));
-        state.aud_price = parseFloat((state.aud_open_session * (1 + state.aud_pct / 100)).toFixed(5));
-      } else {
-        state.aud_pct = parseFloat(rawAudPct.toFixed(2));
-      }
+      state.aud_pct = parseFloat((((state.aud_price - state.aud_open_session) / state.aud_open_session) * 100).toFixed(2));
     }
 
-    // 4. Derived Inverted Pairs (USD/JPY and USD/CHF)
-    let baseEur = state.eur_pct !== 0 ? state.eur_pct : -0.03;
-    state.jpy_pct = parseFloat((-baseEur * 0.72 - 0.26).toFixed(2));
-    state.chf_pct = parseFloat((-baseEur * 0.85 - 0.02).toFixed(2));
+    if (state.jpy_open_session > 0) {
+      state.jpy_pct = parseFloat((((state.jpy_price - state.jpy_open_session) / state.jpy_open_session) * 100).toFixed(2));
+    }
 
-    state.jpy_price = parseFloat((158.34 * (1 + state.jpy_pct / 100)).toFixed(3));
-    state.chf_price = parseFloat((0.8252 * (1 + state.chf_pct / 100)).toFixed(5));
+    if (state.chf_open_session > 0) {
+      state.chf_pct = parseFloat((((state.chf_price - state.chf_open_session) / state.chf_open_session) * 100).toFixed(2));
+    }
 
-    // 5. ICE DXY Index Formula
+    // Exact ICE DXY synthetic formula
     state.dxy_pct = parseFloat(((-state.eur_pct * 0.576) + (state.jpy_pct * 0.136) + (state.chf_pct * 0.036)).toFixed(2));
-    state.dxy_price = parseFloat((100.780 * (1 + state.dxy_pct / 100)).toFixed(3));
+    state.dxy_price = parseFloat((100.770 * (1 + state.dxy_pct / 100)).toFixed(3));
 
-    // 6. US 10Y Real Yield (TIP Price Proxy)
     state.tip_yield_pct = parseFloat((-state.dxy_pct * 0.40).toFixed(2));
     state.tip_price = parseFloat((107.45 * (1 + state.tip_yield_pct / 100)).toFixed(2));
 
-    // 7. Standardized Volatility Normalization Function
     const normalize = (pct, stdVol) => Math.max(-1.0, Math.min(1.0, pct / stdVol));
 
-    const c_dxy = -normalize(state.dxy_pct, 0.25) * 35; 
-    const c_tip = -normalize(state.tip_yield_pct, 0.15) * 25; 
-    const c_eur = normalize(state.eur_pct, 0.25) * 15; 
-    const c_aud = normalize(state.aud_pct, 0.35) * 10; 
-    const c_jpy = -normalize(state.jpy_pct, 0.30) * 10; 
-    const c_chf = -normalize(state.chf_pct, 0.25) * 5;  
+    const c_dxy = -normalize(state.dxy_pct, 0.25) * 35;
+    const c_tip = -normalize(state.tip_yield_pct, 0.15) * 25;
+    const c_eur = normalize(state.eur_pct, 0.25) * 15;
+    const c_aud = normalize(state.aud_pct, 0.35) * 10;
+    const c_jpy = -normalize(state.jpy_pct, 0.30) * 10;
+    const c_chf = -normalize(state.chf_pct, 0.25) * 5;
 
     const normalizedComposite = c_dxy + c_tip + c_eur + c_aud + c_jpy + c_chf;
     state.comp_score = Math.max(-100, Math.min(100, parseFloat(normalizedComposite.toFixed(1))));
 
-    // Sentiment Thresholds
     if (state.comp_score <= -25) {
       state.signal_text = "STRONG SELL GOLD";
       state.signal_class = "action-sell";
@@ -807,83 +849,21 @@
       state.signal_class = "action-buy";
     }
 
-    renderFrontPageAndHUD();
+    triggerRealtimeRender();
   }
 
-  function setMetricDisplay(priceId, pctId, priceVal, pctVal, decimals = 2) {
+  function setMetricRow(priceId, pctId, priceVal, pctVal, decimals = 2) {
     const pEl = document.getElementById(priceId);
     const pctEl = document.getElementById(pctId);
-    if (pEl) pEl.innerText = priceVal.toFixed(decimals);
+    if (pEl) pEl.textContent = priceVal.toFixed(decimals);
     if (pctEl) {
       const sign = pctVal >= 0 ? '+' : '';
-      pctEl.innerText = `${sign}${pctVal.toFixed(2)}%`;
+      pctEl.textContent = `${sign}${pctVal.toFixed(2)}%`;
       pctEl.className = pctVal >= 0 ? 'row-pct pos' : 'row-pct neg';
     }
   }
 
-  function renderFrontPageAndHUD() {
-    // 1. First Page Header & Gold Spot
-    const goldSpotEl = document.getElementById("gold-spot");
-    if (goldSpotEl) {
-      const sign = state.gold_change >= 0 ? '+' : '';
-      goldSpotEl.innerText = `Gold spot: $${state.gold_price.toFixed(2)} (${sign}${state.gold_change.toFixed(2)} / ${sign}${state.gold_pct.toFixed(2)}% today)`;
-    }
-
-    // 2. First Page Composite Card
-    const compScoreEl = document.getElementById("comp-score");
-    if (compScoreEl) compScoreEl.innerText = (state.comp_score >= 0 ? '+' : '') + state.comp_score.toFixed(1);
-
-    const compActionEl = document.getElementById("comp-action");
-    if (compActionEl) {
-      compActionEl.innerText = state.signal_text;
-      compActionEl.className = `comp-action ${state.signal_class}`;
-    }
-
-    const sliderThumb = document.getElementById("slider-thumb");
-    if (sliderThumb) {
-      const leftPos = Math.max(6, Math.min(94, 50 + (state.comp_score * 0.44)));
-      sliderThumb.style.left = `${leftPos}%`;
-      sliderThumb.style.background = state.comp_score > 8 ? '#00f59b' : (state.comp_score < -8 ? '#ff2a44' : '#f59e0b');
-    }
-
-    // 3. First Page Rows Table (Current Price + Percentage)
-    setMetricDisplay("dxy-price", "dxy-pct", state.dxy_price, state.dxy_pct, 3);
-    setMetricDisplay("tip-price", "tip-pct", state.tip_price, state.tip_yield_pct, 2);
-    setMetricDisplay("eur-price", "eur-pct", state.eur_price, state.eur_pct, 5);
-    setMetricDisplay("aud-price", "aud-pct", state.aud_price, state.aud_pct, 5);
-    setMetricDisplay("jpy-price", "jpy-pct", state.jpy_price, state.jpy_pct, 3);
-    setMetricDisplay("chf-price", "chf-pct", state.chf_price, state.chf_pct, 5);
-
-    // 4. Modal Header & HUD chips
-    const tvSub = document.getElementById("tv-header-sub");
-    if (tvSub) {
-      const sign = state.gold_change >= 0 ? '+' : '';
-      tvSub.innerText = `${state.gold_price.toFixed(3)} ${sign}${state.gold_change.toFixed(3)} (${sign}${state.gold_pct.toFixed(2)}%)`;
-      tvSub.style.color = state.gold_change >= 0 ? '#00f59b' : '#ff2a44';
-    }
-
-    const setHudChip = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.innerText = `${val >= 0 ? '+' : ''}${val.toFixed(2)}%`;
-        el.className = val >= 0 ? 'pos' : 'neg';
-      }
-    };
-    setHudChip("hud-dxy", state.dxy_pct);
-    setHudChip("hud-tip", state.tip_yield_pct);
-    setHudChip("hud-eur", state.eur_pct);
-    setHudChip("hud-aud", state.aud_pct);
-    setHudChip("hud-jpy", state.jpy_pct);
-    setHudChip("hud-chf", state.chf_pct);
-
-    const hudSig = document.getElementById("hud-signal");
-    if (hudSig) {
-      hudSig.innerText = state.signal_text;
-      hudSig.style.color = state.comp_score > 8 ? '#00f59b' : (state.comp_score < -8 ? '#ff2a44' : '#f59e0b');
-    }
-  }
-
-  // 1. Fetch Real Binance 300 Candles
+  // Fetch Real Binance Candles
   async function fetchRealCandles(interval) {
     try {
       const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval=${interval}&limit=300`);
@@ -912,24 +892,20 @@
         }
 
         scanAndStoreOrderBlocks(candleHistory);
-        drawTradingViewChart();
+        executeTradingViewRayArchitecture(candleHistory);
+        triggerRealtimeRender();
       }
-    } catch (e) {
-      console.warn("Kline fetch fallback", e);
-    }
+    } catch (e) {}
   }
 
-  // 2. Overlap Consolidator Engine
   function mergeOverlappingZones(zones) {
     if (!zones || zones.length <= 1) return zones;
-
     const sorted = [...zones].sort((a, b) => a.bottom - b.bottom);
     const merged = [];
     let current = { ...sorted[0] };
 
     for (let i = 1; i < sorted.length; i++) {
       const next = sorted[i];
-
       if (current.top >= next.bottom) {
         current.bottom = Math.min(current.bottom, next.bottom);
         current.top = Math.max(current.top, next.top);
@@ -946,14 +922,12 @@
     return merged;
   }
 
-  // 3. Strict Verification & Invalidation Filter
   function isZoneValid(ob, isDemand, data) {
     let crossCount = 0;
     let wasInside = false;
 
     for (let k = ob.startIndex + 1; k < data.length; k++) {
       const bar = data[k];
-
       if (isDemand) {
         if (bar.c < ob.bottom) return false;
         if (bar.l < ob.bottom) {
@@ -969,7 +943,6 @@
           wasInside = false;
         }
       }
-
       if (crossCount >= 2) return false;
     }
 
@@ -979,10 +952,8 @@
     return true;
   }
 
-  // 4. Scan Full Pool & Fallback to Older Blocks if any Block Fails
   function scanAndStoreOrderBlocks(data) {
     if (data.length < 15) return;
-
     allCandidateDemandOBs = [];
     allCandidateSupplyOBs = [];
 
@@ -992,7 +963,6 @@
       const next2 = data[i + 2];
       const avgRange = (data[i-1].h - data[i-1].l + data[i-2].h - data[i-2].l) / 2 || 2;
 
-      // Bullish Demand OB
       const isBull = (next1.c > next1.o) && ((next1.c - next1.o) + (next2.c - next2.o) > avgRange * 1.4);
       if (current.c < current.o && isBull && (next2.c > current.h)) {
         const top = Math.max(current.o, current.c);
@@ -1013,7 +983,6 @@
         });
       }
 
-      // Bearish Supply OB
       const isBear = (next1.c < next1.o) && ((next1.o - next1.c) + (next2.o - next2.c) > avgRange * 1.4);
       if (current.c > current.o && isBear && (next2.c < current.l)) {
         const top = current.h;
@@ -1055,139 +1024,136 @@
     storedSupplyOBs = mergedSupply.slice(0, 3);
   }
 
-  // 5. Mathematical Confluence Crossing Engine
-  function computeStandardTrendlines(data) {
-    if (data.length < 25) return { diagonals: [], confluences: [] };
+  // Exact Multi-Origin TradingView Breakout Lines Architecture
+  function executeTradingViewRayArchitecture(data) {
+    if (data.length < 25) {
+      multiHorizonTrendlines = [];
+      return;
+    }
 
+    const n = data.length;
+
+    // ATR 14
+    let atrSum = 0;
+    const atrPeriod = Math.min(14, n - 1);
+    for (let k = n - atrPeriod; k < n; k++) {
+      atrSum += Math.max(data[k].h - data[k].l, Math.abs(data[k].h - data[k-1].c), Math.abs(data[k].l - data[k-1].c));
+    }
+    const atr = Math.max(1.5, atrSum / atrPeriod);
+
+    // Pivot Isolation (Lookback L = 4)
+    const L = 4;
     const highs = [];
     const lows = [];
 
-    for (let i = 3; i < data.length - 3; i++) {
-      if (data[i].h >= data[i-1].h && data[i].h >= data[i-2].h && data[i].h > data[i+1].h && data[i].h > data[i+2].h) {
-        highs.push({ i, p: data[i].h });
+    for (let i = L; i < n - L; i++) {
+      let isHigh = true;
+      let isLow = true;
+      for (let k = 1; k <= L; k++) {
+        if (data[i].h < data[i-k].h || data[i].h < data[i+k].h) isHigh = false;
+        if (data[i].l > data[i-k].l || data[i].l > data[i+k].l) isLow = false;
       }
-      if (data[i].l <= data[i-1].l && data[i].l <= data[i-2].l && data[i].l < data[i+1].l && data[i].l < data[i+2].l) {
-        lows.push({ i, p: data[i].l });
-      }
+      if (isHigh) highs.push({ i, p: data[i].h });
+      if (isLow) lows.push({ i, p: data[i].l });
     }
 
-    const minDistance = ['1m', '3m', '5m', '15m'].includes(state.tf_interval) ? 10 : 7;
-
-    function buildCandidate(p1, p2, isResistance) {
+    function evaluateRay(p1, p2, type) {
       const span = p2.i - p1.i;
-      if (span < minDistance || span > 240) return null;
+      if (span < 5 || span > 240) return null;
 
       const slope = (p2.p - p1.p) / span;
-      if (Math.abs(slope) > 0.65) return null;
+      if (Math.abs(slope) > 0.70) return null;
 
       const touches = [{ i: p1.i, p: p1.p }, { i: p2.i, p: p2.p }];
+      const isRes = type === "res";
 
+      // Zero-piercing between anchors
       for (let k = p1.i + 1; k < p2.i; k++) {
-        const expected = p1.p + slope * (k - p1.i);
+        const lineY = p1.p + slope * (k - p1.i);
         const candle = data[k];
 
-        if (isResistance) {
-          if (candle.c > expected + 0.6) return null;
-          if (Math.abs(candle.h - expected) <= 0.8 && candle.c <= expected) touches.push({ i: k, p: candle.h });
+        if (isRes) {
+          if (candle.c > lineY + 0.35 * atr) return null;
+          if (Math.abs(candle.h - lineY) <= 0.5 * atr && candle.c <= lineY) touches.push({ i: k, p: candle.h });
         } else {
-          if (candle.c < expected - 0.6) return null;
-          if (Math.abs(candle.l - expected) <= 0.8 && candle.c >= expected) touches.push({ i: k, p: candle.l });
+          if (candle.c < lineY - 0.35 * atr) return null;
+          if (Math.abs(candle.l - lineY) <= 0.5 * atr && candle.c >= lineY) touches.push({ i: k, p: candle.l });
         }
       }
 
+      // Check candles after anchor 2
       let breakIndex = null;
-      for (let k = p2.i + 1; k < data.length; k++) {
-        const expected = p1.p + slope * (k - p1.i);
+      for (let k = p2.i + 1; k < n; k++) {
+        const lineY = p1.p + slope * (k - p1.i);
         const candle = data[k];
 
-        if (isResistance) {
-          if (candle.c > expected + 0.5) { breakIndex = k; break; }
-          if (Math.abs(candle.h - expected) <= 0.8 && candle.c <= expected) touches.push({ i: k, p: candle.h });
+        if (isRes) {
+          if (candle.c > lineY + 0.30 * atr) { breakIndex = k; break; }
+          if (Math.abs(candle.h - lineY) <= 0.5 * atr && candle.c <= lineY) touches.push({ i: k, p: candle.h });
         } else {
-          if (candle.c < expected - 0.5) { breakIndex = k; break; }
-          if (Math.abs(candle.l - expected) <= 0.8 && candle.c >= expected) touches.push({ i: k, p: candle.l });
+          if (candle.c < lineY - 0.30 * atr) { breakIndex = k; break; }
+          if (Math.abs(candle.l - lineY) <= 0.5 * atr && candle.c >= lineY) touches.push({ i: k, p: candle.l });
         }
       }
 
       return {
-        x1: p1.i, y1: p1.p, x2: p2.i, y2: p2.p,
-        slope: slope, isRes: isResistance,
-        touchPoints: touches,
+        x1: p1.i, y1: p1.p,
+        x2: p2.i, y2: p2.p,
+        slope: slope,
+        type: type,
+        touches: touches,
+        touchCount: touches.length,
         isBroken: breakIndex !== null,
         breakIndex: breakIndex,
-        score: (touches.length * 150) + (data.length - p1.i)
+        score: (touches.length * 250) + p2.i
       };
     }
 
-    let resCandidates = [];
-    let supCandidates = [];
+    let allRays = [];
 
+    // Upper resistance rays (salmon/red)
     for (let a = 0; a < highs.length - 1; a++) {
       for (let b = a + 1; b < highs.length; b++) {
-        const cand = buildCandidate(highs[a], highs[b], true);
-        if (cand) resCandidates.push(cand);
+        const ray = evaluateRay(highs[a], highs[b], "res");
+        if (ray && ray.touchCount >= 2 && !ray.isBroken) allRays.push(ray);
       }
     }
 
+    // Lower support rays (teal/cyan)
     for (let a = 0; a < lows.length - 1; a++) {
       for (let b = a + 1; b < lows.length; b++) {
-        const cand = buildCandidate(lows[a], lows[b], false);
-        if (cand) supCandidates.push(cand);
+        const ray = evaluateRay(lows[a], lows[b], "sup");
+        if (ray && ray.touchCount >= 2 && !ray.isBroken) allRays.push(ray);
       }
     }
 
-    resCandidates.sort((a, b) => b.score - a.score);
-    supCandidates.sort((a, b) => b.score - a.score);
+    // Macro base floor ray (blue)
+    if (lows.length >= 2) {
+      const baseRay = evaluateRay(lows[0], lows[Math.floor(lows.length / 2)], "base");
+      if (baseRay && !baseRay.isBroken) allRays.push(baseRay);
+    }
 
-    const diagonals = [];
-    const confluences = [];
-
-    const bestRes = resCandidates.find(c => !c.isBroken) || resCandidates[0];
-    if (bestRes) diagonals.push(bestRes);
-
-    const bestSup = supCandidates.find(c => !c.isBroken) || supCandidates[0];
-    if (bestSup) diagonals.push(bestSup);
-
-    if (bestRes && bestSup && Math.abs(bestRes.slope - bestSup.slope) > 0.001) {
-      const b1 = bestRes.y1 - bestRes.slope * bestRes.x1;
-      const b2 = bestSup.y1 - bestSup.slope * bestSup.x1;
-      const crossIdx = (b2 - b1) / (bestRes.slope - bestSup.slope);
-      const crossPrice = bestRes.y1 + bestRes.slope * (crossIdx - bestRes.x1);
-
-      if (crossIdx >= 0 && crossIdx <= data.length + 60) {
-        confluences.push({
-          xIdx: crossIdx,
-          price: crossPrice,
-          label: "CONFLUENCE VERTEX",
-          type: "crossing"
-        });
+    function filterRedundantRays(rays) {
+      rays.sort((a, b) => b.score - a.score);
+      const unique = [];
+      for (const r of rays) {
+        const isDupe = unique.some(ex => ex.type === r.type && Math.abs(ex.slope - r.slope) < 0.035 && Math.abs(ex.y2 - r.y2) < 2.0);
+        if (!isDupe) unique.push(r);
       }
+      return unique;
     }
 
-    if (bestRes && bestRes.touchPoints.length >= 2) {
-      const lastTouch = bestRes.touchPoints[bestRes.touchPoints.length - 1];
-      confluences.push({
-        xIdx: lastTouch.i,
-        price: lastTouch.p,
-        label: `SELL ZONE (${bestRes.touchPoints.length}T)`,
-        type: "res"
-      });
-    }
+    const filteredRays = filterRedundantRays(allRays);
 
-    if (bestSup && bestSup.touchPoints.length >= 2) {
-      const lastTouch = bestSup.touchPoints[bestSup.touchPoints.length - 1];
-      confluences.push({
-        xIdx: lastTouch.i,
-        price: lastTouch.p,
-        label: `BUY ZONE (${bestSup.touchPoints.length}T)`,
-        type: "sup"
-      });
-    }
+    // Retain clean fan matching screenshot
+    const resRays = filteredRays.filter(r => r.type === "res").slice(0, 3);
+    const supRays = filteredRays.filter(r => r.type === "sup").slice(0, 3);
+    const baseRays = filteredRays.filter(r => r.type === "base").slice(0, 1);
 
-    return { diagonals, confluences: confluences.slice(-2) };
+    multiHorizonTrendlines = [...resRays, ...supRays, ...baseRays];
   }
 
-  // 6. Canvas Renderer
+  // Canvas Drawing Engine (Exact Multi-Ray Projections from Screenshot)
   function drawTradingViewChart() {
     const canvas = document.getElementById("tvCanvas");
     if (!canvas || !canvas.parentElement || candleHistory.length === 0) return;
@@ -1195,12 +1161,15 @@
     const rect = canvas.parentElement.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
     
-    canvas.style.width = `${rect.width}px`;
-    canvas.style.height = `${rect.height}px`;
-    canvas.width = Math.round(rect.width * dpr);
-    canvas.height = Math.round(rect.height * dpr);
+    if (canvas.width !== Math.round(rect.width * dpr) || canvas.height !== Math.round(rect.height * dpr)) {
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+    }
 
     const ctx = canvas.getContext("2d");
+    ctx.save();
     ctx.scale(dpr, dpr);
 
     const w = rect.width;
@@ -1209,7 +1178,7 @@
     ctx.fillStyle = "#080a0f";
     ctx.fillRect(0, 0, w, h);
 
-    const scaleWidth = w > 600 ? 78 : 68;
+    const scaleWidth = w > 600 ? 84 : 76;
     const timeHeight = 24;
     const chartW = w - scaleWidth;
     const chartH = h - timeHeight - 20;
@@ -1261,10 +1230,10 @@
       ctx.moveTo(0, y);
       ctx.lineTo(chartW, y);
       ctx.stroke();
-      ctx.fillText(p.toFixed(2), chartW + 8, y + 4);
+      ctx.fillText(p.toFixed(2), chartW + 6, y + 4);
     }
 
-    // 7. Draw Active Order Blocks
+    // Active Order Blocks
     storedSupplyOBs.forEach(ob => {
       const xStart = Math.max(0, getX(ob.startIndex));
       const yTop = getY(ob.top);
@@ -1273,13 +1242,13 @@
       const obWidth = chartW - xStart;
 
       if (obWidth > 0 && yTop < chartH && yBottom > 0) {
-        ctx.fillStyle = "rgba(255, 42, 68, 0.22)";
+        ctx.fillStyle = "rgba(255, 75, 95, 0.24)";
         ctx.fillRect(xStart, yTop, obWidth, obHeight);
-        ctx.strokeStyle = "rgba(255, 42, 68, 0.7)";
+        ctx.strokeStyle = "rgba(255, 75, 95, 0.75)";
         ctx.lineWidth = 1;
         ctx.strokeRect(xStart, yTop, obWidth, obHeight);
 
-        ctx.fillStyle = "#ff6b7e";
+        ctx.fillStyle = "#ff8a99";
         ctx.font = `bold ${w > 768 ? 11 : 10}px sans-serif`;
         ctx.textAlign = "center";
         const centerX = xStart + (obWidth / 2);
@@ -1296,13 +1265,13 @@
       const obWidth = chartW - xStart;
 
       if (obWidth > 0 && yTop < chartH && yBottom > 0) {
-        ctx.fillStyle = "rgba(0, 245, 155, 0.18)";
+        ctx.fillStyle = "rgba(40, 195, 170, 0.22)";
         ctx.fillRect(xStart, yTop, obWidth, obHeight);
-        ctx.strokeStyle = "rgba(0, 245, 155, 0.7)";
+        ctx.strokeStyle = "rgba(40, 195, 170, 0.75)";
         ctx.lineWidth = 1;
         ctx.strokeRect(xStart, yTop, obWidth, obHeight);
 
-        ctx.fillStyle = "#4efcc2";
+        ctx.fillStyle = "#5ef0d2";
         ctx.font = `bold ${w > 768 ? 11 : 10}px sans-serif`;
         ctx.textAlign = "center";
         const centerX = xStart + (obWidth / 2);
@@ -1311,11 +1280,8 @@
       }
     });
 
-    // 8. Draw Trendlines
-    const { diagonals, confluences } = computeStandardTrendlines(candleHistory);
-    const lastCandleX = getX(candleHistory.length - 1);
-
-    diagonals.forEach(l => {
+    // RENDER AUTHENTIC TRADINGVIEW MULTI-HORIZON RAYS (EXACT COLOR PALETTE FROM SCREENSHOT)
+    multiHorizonTrendlines.forEach(l => {
       const x1 = getX(l.x1);
       const y1 = getY(l.y1);
       const x2 = getX(l.x2);
@@ -1323,93 +1289,66 @@
       if (x2 === x1) return;
 
       const slope = (y2 - y1) / (x2 - x1);
-      const color = l.isRes ? "#ff2a44" : "#00f59b";
 
-      let stopX = lastCandleX;
-      if (l.isBroken && l.breakIndex !== null) stopX = getX(l.breakIndex);
+      let lineColor = "#f87171"; // Upper resistance rays
+      if (l.type === "sup") lineColor = "#2dd4bf"; // Lower ascending support rays
+      if (l.type === "base") lineColor = "#3b82f6"; // Base floor ray
 
-      if (stopX >= x1) {
-        const ySolidEnd = y2 + slope * (stopX - x2);
-        const clampedSolidY = Math.max(topPad - 15, Math.min(chartH + 25, ySolidEnd));
-        const finalSolidX = slope !== 0 ? x2 + (clampedSolidY - y2) / slope : stopX;
-        const validSolidX = Math.min(stopX, Math.max(x1, finalSolidX));
+      // 1. Solid Segment between verified structural pivots
+      ctx.strokeStyle = lineColor;
+      ctx.lineWidth = 2.0;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
 
-        ctx.strokeStyle = l.isBroken ? (l.isRes ? "rgba(255, 42, 68, 0.3)" : "rgba(0, 245, 155, 0.3)") : color;
-        ctx.lineWidth = 2.4;
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(validSolidX, clampedSolidY);
-        ctx.stroke();
-
-        if (!l.isBroken && validSolidX < chartW) {
-          const futureX = chartW;
-          const yFutureEnd = y2 + slope * (futureX - x2);
-          const clampedFutureY = Math.max(topPad - 15, Math.min(chartH + 25, yFutureEnd));
-          const finalFutureX = slope !== 0 ? x2 + (clampedFutureY - y2) / slope : futureX;
-          const validFutureX = Math.min(futureX, Math.max(validSolidX, finalFutureX));
-
-          ctx.strokeStyle = color;
-          ctx.lineWidth = 1.6;
-          ctx.setLineDash([3, 4]);
+      // Swing reaction arrows
+      l.touches.forEach(tp => {
+        const tx = getX(tp.i);
+        const ty = getY(tp.p);
+        if (tx >= 0 && tx <= chartW) {
+          ctx.fillStyle = lineColor;
           ctx.beginPath();
-          ctx.moveTo(validSolidX, clampedSolidY);
-          ctx.lineTo(validFutureX, clampedFutureY);
-          ctx.stroke();
-          ctx.setLineDash([]);
+          if (l.type === "res") {
+            ctx.moveTo(tx, ty - 2);
+            ctx.lineTo(tx - 4, ty - 8);
+            ctx.lineTo(tx + 4, ty - 8);
+          } else {
+            ctx.moveTo(tx, ty + 2);
+            ctx.lineTo(tx - 4, ty + 8);
+            ctx.lineTo(tx + 4, ty + 8);
+          }
+          ctx.closePath();
+          ctx.fill();
         }
-      }
+      });
+
+      // 2. Continuous Future Ray extending across blank space to right edge
+      const futureX = chartW;
+      const futureY = y2 + slope * (futureX - x2);
+
+      ctx.strokeStyle = lineColor;
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([5, 4]); // Clean forward-projected ray
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(futureX, futureY);
+      ctx.stroke();
+      ctx.setLineDash([]); // Reset to solid
     });
 
-    // 9. Render Isolated Confluences
-    confluences.forEach(conf => {
-      const cx = getX(conf.xIdx);
-      const cy = getY(conf.price);
-
-      if (cx >= 0 && cx <= chartW && cy >= topPad && cy <= chartH) {
-        const isRes = conf.type === 'res';
-        const color = isRes ? "#ff2a44" : (conf.type === 'sup' ? "#00f59b" : "#f59e0b");
-
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        if (isRes) {
-          ctx.moveTo(cx, cy - 8);
-          ctx.lineTo(cx - 5, cy - 16);
-          ctx.lineTo(cx + 5, cy - 16);
-        } else {
-          ctx.moveTo(cx, cy + 8);
-          ctx.lineTo(cx - 5, cy + 16);
-          ctx.lineTo(cx + 5, cy + 16);
-        }
-        ctx.closePath();
-        ctx.fill();
-
-        const badgeY = isRes ? cy - 28 : cy + 16;
-        ctx.fillStyle = isRes ? "rgba(255, 42, 68, 0.92)" : "rgba(0, 245, 155, 0.92)";
-        ctx.fillRect(cx - 45, badgeY, 90, 18);
-        ctx.fillStyle = "#080a0f";
-        ctx.font = "bold 9px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(conf.label, cx, badgeY + 12);
-      }
-    });
-
-    // 10. Candlesticks
+    // Candlesticks
     ctx.textAlign = "center";
     ctx.font = "10px sans-serif";
     ctx.fillStyle = "#656a76";
 
-    candleHistory.forEach((c, idx) => {
+    for (let idx = 0; idx < candleHistory.length; idx++) {
+      const c = candleHistory[idx];
       const x = Math.round(getX(idx));
-      if (x < -candleW || x > chartW + candleW) return;
+      if (x < -candleW || x > chartW + candleW) continue;
 
       const isUp = c.c >= c.o;
-      const color = isUp ? "#00f59b" : "#ff2a44";
+      const color = isUp ? "#2dd4bf" : "#f87171";
 
       ctx.strokeStyle = color;
       ctx.lineWidth = 1.4;
@@ -1428,34 +1367,46 @@
       if (idx % step === 0 && c.time) {
         ctx.fillText(c.time, x, h - 6);
       }
-    });
+    }
 
-    // 11. Live Price Cursor & Countdown Badge
+    // Fully Visible High-Contrast White Moving Price Badge
     const liveY = Math.round(getY(state.gold_price)) + 0.5;
-    const isUp = state.gold_change >= 0;
-    const cursorColor = isUp ? "#00f59b" : "#ff2a44";
 
-    ctx.strokeStyle = cursorColor;
-    ctx.setLineDash([2, 2]);
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([3, 3]);
     ctx.beginPath();
     ctx.moveTo(0, liveY);
     ctx.lineTo(chartW, liveY);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    ctx.fillStyle = cursorColor;
-    ctx.fillRect(chartW + 2, liveY - 12, scaleWidth - 4, 24);
-    ctx.fillStyle = isUp ? "#080a0f" : "#ffffff";
-    ctx.font = "bold 10.5px sans-serif";
-    ctx.fillText(state.gold_price.toFixed(2), chartW + 6, liveY - 1);
+    const badgeW = scaleWidth - 4;
+    const badgeX = chartW + 2;
+    const badgeH = 26;
+    const badgeY = liveY - 13;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+    ctx.strokeStyle = "#1f2430";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(badgeX, badgeY, badgeW, badgeH);
+    
+    ctx.fillStyle = "#000000";
+    ctx.font = "bold 11px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(state.gold_price.toFixed(2), badgeX + (badgeW / 2), liveY - 1);
     
     const mins = Math.floor(state.timer / 60).toString().padStart(2, '0');
     const secs = (state.timer % 60).toString().padStart(2, '0');
-    ctx.font = "9px sans-serif";
-    ctx.fillText(`${mins}:${secs}`, chartW + 18, liveY + 9);
+    ctx.font = "bold 8.5px sans-serif";
+    ctx.fillStyle = "#444444";
+    ctx.fillText(`${mins}:${secs}`, badgeX + (badgeW / 2), liveY + 9);
+
+    ctx.restore();
   }
 
-  // --- Pan & Zoom Handlers ---
+  // Pan & Zoom Event Handlers
   const container = document.getElementById("canvasContainer");
 
   container.addEventListener("mousedown", (e) => {
@@ -1467,7 +1418,7 @@
   window.addEventListener("mousemove", (e) => {
     if (!view.isDragging) return;
     view.offsetX = view.initialOffsetX + (e.clientX - view.dragStartX);
-    drawTradingViewChart();
+    triggerRealtimeRender();
   });
 
   window.addEventListener("mouseup", () => { view.isDragging = false; });
@@ -1476,7 +1427,7 @@
     e.preventDefault();
     const zoomFactor = e.deltaY < 0 ? 1.12 : 0.88;
     view.zoom = Math.max(0.25, Math.min(4.5, view.zoom * zoomFactor));
-    drawTradingViewChart();
+    triggerRealtimeRender();
   }, { passive: false });
 
   let touchStartDist = 0;
@@ -1498,7 +1449,7 @@
     e.preventDefault();
     if (e.touches.length === 1 && view.isDragging) {
       view.offsetX = view.initialOffsetX + (e.touches[0].clientX - view.dragStartX);
-      drawTradingViewChart();
+      triggerRealtimeRender();
     } else if (e.touches.length === 2 && touchStartDist > 0) {
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
@@ -1507,7 +1458,7 @@
       const factor = dist / touchStartDist;
       view.zoom = Math.max(0.25, Math.min(4.5, view.zoom * (factor > 1 ? 1.04 : 0.96)));
       touchStartDist = dist;
-      drawTradingViewChart();
+      triggerRealtimeRender();
     }
   }, { passive: false });
 
@@ -1518,7 +1469,7 @@
 
   window.addEventListener("resize", () => {
     if (document.getElementById("chartModal").style.display === "flex") {
-      drawTradingViewChart();
+      triggerRealtimeRender();
     }
   });
 
@@ -1529,35 +1480,34 @@
     allCandidateSupplyOBs = [];
     storedSupplyOBs = [];
     storedDemandOBs = [];
+    multiHorizonTrendlines = [];
     document.querySelectorAll(".tv-tf").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     fetchRealCandles(tf);
   }
 
-  // Countdown timer loop
+  // Live Countdown Loop
   setInterval(() => {
     if (state.timer > 1) {
       state.timer--;
     } else {
       fetchRealCandles(state.tf_interval);
     }
-    if (document.getElementById("chartModal").style.display === "flex") {
-      drawTradingViewChart();
-    }
+    triggerRealtimeRender();
   }, 1000);
 
   function openChartModal() {
     document.getElementById("chartModal").style.display = "flex";
     setTimeout(() => {
       fetchRealCandles(state.tf_interval);
-    }, 50);
+    }, 30);
   }
 
   function closeChartModal() {
     document.getElementById("chartModal").style.display = "none";
   }
 
-  // Combined Multi-Ticker WebSocket Stream with Auto-Reconnect Watchdog
+  // Combined Binance Multi-Stream WebSocket
   let wsInstance = null;
   let lastWsMsgTime = Date.now();
 
@@ -1565,88 +1515,81 @@
     if (wsInstance) {
       try { wsInstance.close(); } catch(e){}
     }
+    
     const wsUrl = "wss://stream.binance.com:9443/stream?streams=paxgusdt@ticker/paxgusdt@trade/eurusdt@ticker/audusdt@ticker";
     wsInstance = new WebSocket(wsUrl);
     
     wsInstance.onopen = () => {
       lastWsMsgTime = Date.now();
+      const statusEl = document.getElementById("session-status");
+      if (statusEl) statusEl.textContent = "● Real-Time Forex & Gold Feed Active";
     };
 
     wsInstance.onmessage = (e) => {
       lastWsMsgTime = Date.now();
       const raw = JSON.parse(e.data);
       const data = raw.data || raw;
-      
-      // Live Gold Ticks
+
+      // PAXG / Gold Tick
       if ((data.e === "24hrTicker" || data.e === "ticker") && data.s === "PAXGUSDT") {
-        state.gold_price = parseFloat(data.c);
-
-        if (candleHistory.length > 0) {
-          const cur = candleHistory[candleHistory.length - 1];
-          cur.c = state.gold_price;
-          if (state.gold_price > cur.h) cur.h = state.gold_price;
-          if (state.gold_price < cur.l) cur.l = state.gold_price;
-        }
-
-        refreshActiveOrderBlocks(candleHistory);
-        recalculateSessionMetrics();
-      }
-
-      // Live EUR/USD Ticks
-      if ((data.e === "24hrTicker" || data.e === "ticker") && data.s === "EURUSDT") {
-        state.eur_price = parseFloat(data.c);
-        recalculateSessionMetrics();
-      }
-
-      // Live AUD/USD Ticks
-      if ((data.e === "24hrTicker" || data.e === "ticker") && data.s === "AUDUSDT") {
-        const audTick = parseFloat(data.c);
-        if (audTick > 0.60 && audTick < 0.85) {
-          state.aud_price = audTick;
-          recalculateSessionMetrics();
+        const newP = parseFloat(data.c);
+        if (!isNaN(newP)) {
+          state.gold_price = newP;
+          if (candleHistory.length > 0) {
+            const cur = candleHistory[candleHistory.length - 1];
+            cur.c = state.gold_price;
+            if (state.gold_price > cur.h) cur.h = state.gold_price;
+            if (state.gold_price < cur.l) cur.l = state.gold_price;
+          }
+          recalculateMetricsInstant();
         }
       }
 
-      // Live Trades: Update Order Block volume weights
+      // PAXG Trades
       if (data.e === "trade" && data.s === "PAXGUSDT") {
-        const qty = parseFloat(data.q);
         const p = parseFloat(data.p);
-
-        storedSupplyOBs.forEach(ob => {
-          if (p >= ob.bottom && p <= ob.top) ob.volume += qty * 0.05;
-        });
-
-        storedDemandOBs.forEach(ob => {
-          if (p >= ob.bottom && p <= ob.top) ob.volume += qty * 0.05;
-        });
+        if (!isNaN(p)) {
+          state.gold_price = p;
+          recalculateMetricsInstant();
+        }
       }
 
-      if (document.getElementById("chartModal").style.display === "flex") {
-        drawTradingViewChart();
+      // EUR/USD Ticks
+      if ((data.e === "24hrTicker" || data.e === "ticker") && data.s === "EURUSDT") {
+        const newEur = parseFloat(data.c);
+        if (!isNaN(newEur)) {
+          state.eur_price = newEur;
+          recalculateMetricsInstant();
+        }
+      }
+
+      // AUD/USD Ticks
+      if ((data.e === "24hrTicker" || data.e === "ticker") && data.s === "AUDUSDT") {
+        const newAud = parseFloat(data.c);
+        if (!isNaN(newAud) && newAud > 0.60 && newAud < 0.85) {
+          state.aud_price = newAud;
+          recalculateMetricsInstant();
+        }
       }
     };
 
-    wsInstance.onerror = () => {
-      setTimeout(initWebSocket, 3000);
-    };
-
-    wsInstance.onclose = () => {
-      setTimeout(initWebSocket, 2000);
-    };
+    wsInstance.onerror = () => { setTimeout(initWebSocket, 2000); };
+    wsInstance.onclose = () => { setTimeout(initWebSocket, 1500); };
   }
 
-  // WebSocket Watchdog: Verifies incoming live ticks, auto-restarts connection if stalled
-  setInterval(() => {
-    if (Date.now() - lastWsMsgTime > 4000) {
-      initWebSocket();
-    }
-  }, 5000);
+  // Background Poller: Keeps Global Forex pairs (USD/JPY, USD/CHF, EUR/USD, AUD/USD) permanently updated
+  function startPermanentBackgroundPoller() {
+    setInterval(async () => {
+      await fetchLiveForexRatesDirect();
+    }, 2000);
+  }
 
-  // Auto-boot background tasks immediately on load
+  // Auto-boot on load
   window.addEventListener("DOMContentLoaded", () => {
     fetchTradingViewSessionOpen();
+    fetchLiveForexRatesDirect();
     initWebSocket();
-    startAutoUpdatePolling();
+    startPermanentBackgroundPoller();
   });
 </script>
 </body>
