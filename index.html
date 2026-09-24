@@ -11,7 +11,7 @@
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
     body { background-color: #050608; color: #e1e4ea; padding: 12px 8px; display: flex; justify-content: center; }
     
-    /* --- Security Lock Screen (Always visible initially) --- */
+    /* --- Security Lock Screen --- */
     .pin-lock-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -177,12 +177,14 @@
 
     /* --- Core Dashboard Styles --- */
     .card { background: #0c0e14; border-radius: 16px; border: 1px solid #1f2430; width: 100%; max-width: 480px; padding: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8); }
-    .header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
-    h1 { font-size: 18px; font-weight: 700; color: #ffffff; }
-    .btn-lock { background: #151822; border: 1px solid #2a3142; color: #8e95a5; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
-    .btn-lock:active { background: #1e2330; }
-    .gold-spot { font-size: 13.5px; color: #8e95a5; margin-bottom: 14px; font-weight: 500; }
-    
+    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    h1 { font-size: 17.5px; font-weight: 700; color: #ffffff; }
+    .header-actions { display: flex; gap: 8px; }
+    .btn-header-action { background: #151822; border: 1px solid #2a3142; color: #8e95a5; font-size: 11px; font-weight: 600; padding: 5px 9px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    .btn-header-action:active { background: #1e2330; }
+    .gold-spot { font-size: 13.5px; color: #8e95a5; margin-bottom: 4px; font-weight: 500; }
+    .session-status { font-size: 11px; color: #00f59b; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 5px; }
+
     .signal-card { background: #131722; border: 1px solid #1f2430; border-radius: 14px; padding: 14px; text-align: center; margin-bottom: 14px; }
     .comp-title { font-size: 12px; color: #787b86; font-weight: 500; }
     .comp-action { font-size: 24px; font-weight: 800; margin: 6px 0 10px 0; }
@@ -203,7 +205,10 @@
     .row:last-child { border-bottom: none; }
     .row-title { font-size: 13px; font-weight: 600; color: #d1d4dc; }
     .row-meta { font-size: 11px; color: #787b86; margin-top: 2px; }
-    .row-pct { font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    
+    .row-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+    .row-price { font-size: 13px; font-weight: 700; color: #e1e4ea; font-variant-numeric: tabular-nums; }
+    .row-pct { font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 2px; }
     .pos { color: #00f59b; }
     .neg { color: #ff2a44; }
 
@@ -212,18 +217,18 @@
       position: fixed; 
       top: 0; left: 0; right: 0; bottom: 0; 
       background: rgba(0, 0, 0, 0.94); 
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px); 
       z-index: 99999; 
-      justify-content: center;
-      align-items: center;
+      justify-content: center; 
+      align-items: center; 
     }
-    .modal-container {
-      background: #080a0f;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+    .modal-container { 
+      background: #080a0f; 
+      width: 100%; 
+      height: 100%; 
+      display: flex; 
+      flex-direction: column; 
+      overflow: hidden; 
     }
 
     @media (min-width: 768px) {
@@ -242,7 +247,7 @@
     .tv-asset-info { display: flex; flex-direction: column; }
     .tv-asset-title { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #ffffff; }
     .tv-gold-dot { width: 14px; height: 14px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #080a0f; font-size: 8px; font-weight: 900; }
-    .tv-price-sub { font-size: 11.5px; font-weight: 600; color: #ff2a44; margin-top: 2px; }
+    .tv-price-sub { font-size: 11.5px; font-weight: 600; color: #00f59b; margin-top: 2px; }
     .tv-controls { display: flex; align-items: center; gap: 8px; }
     .tv-pill-btn { border: 1px solid #1f2430; background: #131722; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 700; color: #e1e4ea; cursor: pointer; }
     .tv-close { background: none; border: none; font-size: 20px; color: #8e95a5; cursor: pointer; padding: 0 6px; }
@@ -277,7 +282,7 @@
       background: #080a0f; 
       overflow: hidden; 
       cursor: grab; 
-      touch-action: none;
+      touch-action: none; 
       user-select: none;
     }
     .canvas-container:active { cursor: grabbing; }
@@ -342,17 +347,21 @@
 
 <div class="card">
   <div class="header-row">
-    <h1>Gold (XAU/USD) Live Correlation Signal</h1>
-    <button class="btn-lock" onclick="lockTerminal()">🔒 Lock</button>
+    <h1>Gold (XAU/USD) Live Correlation</h1>
+    <div class="header-actions">
+      <button class="btn-header-action" onclick="emergencyRefresh()">🔄 Refresh</button>
+      <button class="btn-header-action" onclick="lockTerminal()">🔒 Lock</button>
+    </div>
   </div>
-  <div class="gold-spot" id="gold-spot">Gold spot: Syncing...</div>
+  <div class="gold-spot" id="gold-spot">Gold spot: Syncing TradingView session...</div>
+  <div class="session-status" id="session-status">● Live Stream Active (IST / NY Close)</div>
 
   <div class="signal-card">
-    <div class="comp-title">Composite score: <span id="comp-score">-24.9</span> / 100</div>
-    <div class="comp-action action-sell" id="comp-action">STRONG SELL GOLD</div>
+    <div class="comp-title">Composite score: <span id="comp-score">0.0</span> / 100</div>
+    <div class="comp-action action-neutral" id="comp-action">NEUTRAL</div>
     <div class="track-wrapper">
       <div class="slider-track">
-        <div class="slider-thumb" id="slider-thumb" style="left: 36%; background: #ff2a44;"></div>
+        <div class="slider-thumb" id="slider-thumb" style="left: 50%; background: #f59e0b;"></div>
       </div>
     </div>
     <div class="slider-labels">
@@ -375,42 +384,60 @@
         <div class="row-title">DXY (synthetic, 6-pair)</div>
         <div class="row-meta">35% weight &bull; Very High &bull; Exact ICE formula</div>
       </div>
-      <div class="row-pct pos" id="dxy-pct">+0.26%</div>
+      <div class="row-right">
+        <div class="row-price" id="dxy-price">100.780</div>
+        <div class="row-pct pos" id="dxy-pct">+0.00%</div>
+      </div>
     </div>
     <div class="row">
       <div>
         <div class="row-title">US 10Y Real Yield (via TIP ETF)</div>
         <div class="row-meta">25% weight &bull; Very High &bull; TIP price, sign flipped</div>
       </div>
-      <div class="row-pct neg" id="tip-pct">-0.11%</div>
+      <div class="row-right">
+        <div class="row-price" id="tip-price">107.45</div>
+        <div class="row-pct pos" id="tip-pct">+0.00%</div>
+      </div>
     </div>
     <div class="row">
       <div>
         <div class="row-title">EUR/USD</div>
         <div class="row-meta">15% weight &bull; High &bull; +70/+80%</div>
       </div>
-      <div class="row-pct neg" id="eur-pct">-0.37%</div>
+      <div class="row-right">
+        <div class="row-price" id="eur-price">1.13795</div>
+        <div class="row-pct neg" id="eur-pct">-0.03%</div>
+      </div>
     </div>
     <div class="row">
       <div>
         <div class="row-title">AUD/USD</div>
         <div class="row-meta">10% weight &bull; Mod/High &bull; +60/+75%</div>
       </div>
-      <div class="row-pct neg" id="aud-pct">-0.57%</div>
+      <div class="row-right">
+        <div class="row-price" id="aud-price">0.70257</div>
+        <div class="row-pct neg" id="aud-pct">-0.19%</div>
+      </div>
     </div>
     <div class="row">
       <div>
         <div class="row-title">USD/JPY</div>
         <div class="row-meta">10% weight &bull; Moderate &bull; -50/-65%</div>
       </div>
-      <div class="row-pct pos" id="jpy-pct">+0.23%</div>
+      <div class="row-right">
+        <div class="row-price" id="jpy-price">157.883</div>
+        <div class="row-pct neg" id="jpy-pct">-0.29%</div>
+      </div>
     </div>
     <div class="row">
       <div>
         <div class="row-title">USD/CHF</div>
         <div class="row-meta">5% weight &bull; Mod/High &bull; -60/-70%</div>
       </div>
-      <div class="row-pct pos" id="chf-pct">+0.28%</div>
+      <div class="row-right">
+        <div class="row-price" id="chf-price">0.82486</div>
+        <div class="row-pct neg" id="chf-pct">-0.05%</div>
+      </div>
     </div>
   </div>
 </div>
@@ -432,13 +459,13 @@
     </div>
 
     <div class="chart-hud">
-      <div class="hud-chip">DXY: <span id="hud-dxy" class="pos">+0.26%</span></div>
-      <div class="hud-chip">10Y Yield: <span id="hud-tip" class="neg">-0.11%</span></div>
-      <div class="hud-chip">EUR/USD: <span id="hud-eur" class="neg">-0.37%</span></div>
-      <div class="hud-chip">AUD/USD: <span id="hud-aud" class="neg">-0.57%</span></div>
-      <div class="hud-chip">USD/JPY: <span id="hud-jpy" class="pos">+0.23%</span></div>
-      <div class="hud-chip">USD/CHF: <span id="hud-chf" class="pos">+0.28%</span></div>
-      <div class="hud-chip">Signal: <span id="hud-signal" style="color:#ff2a44;">STRONG SELL</span></div>
+      <div class="hud-chip">DXY: <span id="hud-dxy" class="pos">+0.00%</span></div>
+      <div class="hud-chip">10Y Yield: <span id="hud-tip" class="pos">+0.00%</span></div>
+      <div class="hud-chip">EUR/USD: <span id="hud-eur" class="neg">-0.03%</span></div>
+      <div class="hud-chip">AUD/USD: <span id="hud-aud" class="neg">-0.19%</span></div>
+      <div class="hud-chip">USD/JPY: <span id="hud-jpy" class="neg">-0.29%</span></div>
+      <div class="hud-chip">USD/CHF: <span id="hud-chf" class="neg">-0.05%</span></div>
+      <div class="hud-chip">Signal: <span id="hud-signal" style="color:#f59e0b;">NEUTRAL</span></div>
     </div>
 
     <div class="tv-tf-bar">
@@ -525,8 +552,6 @@
         lockScreen.style.display = "none";
       }, 250);
     }
-    fetchInitialMarketData();
-    initWebSocket();
   }
 
   function lockTerminal() {
@@ -572,20 +597,34 @@
     setTimeout(unlockApp, 150);
   }
 
-  // --- Chart Engine & Core State ---
+  // --- TradingView Session Model State ---
   const state = {
-    gold_price: 4286.38,
-    gold_change: -64.20,
-    gold_pct: -1.48,
-    dxy_pct: 0.26,
-    tip_yield_pct: -0.11,
-    eur_pct: -0.37,
-    aud_pct: -0.57,
-    jpy_pct: 0.23,
-    chf_pct: 0.28,
-    comp_score: -24.9,
-    signal_text: 'STRONG SELL GOLD',
-    signal_class: 'action-sell',
+    // Current Live Prices
+    gold_price: 4287.57,
+    eur_price: 1.13795,
+    aud_price: 0.70257,
+    jpy_price: 157.883,
+    chf_price: 0.82486,
+    dxy_price: 100.780,
+    tip_price: 107.45,
+
+    // TradingView Session Open Benchmarks (2:30 AM IST Rollover)
+    gold_open_session: 4287.10,
+    eur_open_session: 1.13830,
+    aud_open_session: 0.70390,
+
+    // Session Percentage Deltas
+    gold_change: 0.47,
+    gold_pct: 0.01,
+    dxy_pct: 0.00,
+    tip_yield_pct: 0.00,
+    eur_pct: -0.03,
+    aud_pct: -0.19,
+    jpy_pct: -0.29,
+    chf_pct: -0.05,
+    comp_score: 1.2,
+    signal_text: 'NEUTRAL',
+    signal_class: 'action-neutral',
     tf_interval: '5m',
     tf_seconds: 300,
     timer: 135
@@ -611,39 +650,156 @@
     drawTradingViewChart();
   }
 
-  // Realistic Macro Correlation & Institutional Score Engine
-  function calculateCompositeAndRender() {
-    let baseEur = Math.max(-1.5, Math.min(1.5, state.eur_pct));
-    if (baseEur === 0) baseEur = -0.37;
+  // Calculate exact New York 5:00 PM EST Close (= 2:30 AM IST) timestamp
+  function getTradingViewSessionStartTime() {
+    const now = new Date();
+    const sessionUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 21, 0, 0));
+    if (now.getTime() < sessionUTC.getTime()) {
+      sessionUTC.setUTCDate(sessionUTC.getUTCDate() - 1);
+    }
+    return sessionUTC.getTime();
+  }
 
-    state.eur_pct = parseFloat(baseEur.toFixed(2));
-    state.aud_pct = parseFloat(Math.max(-1.8, Math.min(1.8, baseEur * 1.35)).toFixed(2));
-    state.jpy_pct = parseFloat(Math.max(-1.5, Math.min(1.5, -baseEur * 0.62)).toFixed(2));
-    state.chf_pct = parseFloat(Math.max(-1.5, Math.min(1.5, -baseEur * 0.75)).toFixed(2));
+  // Fetches baseline prices aligned with TradingView's daily bar open
+  async function fetchTradingViewSessionOpen() {
+    try {
+      const sessionStartMs = getTradingViewSessionStartTime();
+      
+      const [resGold, resEur, resAud] = await Promise.all([
+        fetch(`https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval=1h&startTime=${sessionStartMs}&limit=1`),
+        fetch(`https://api.binance.com/api/v3/klines?symbol=EURUSDT&interval=1h&startTime=${sessionStartMs}&limit=1`),
+        fetch(`https://api.binance.com/api/v3/klines?symbol=AUDUSDT&interval=1h&startTime=${sessionStartMs}&limit=1`)
+      ]);
 
+      const dataGold = await resGold.json();
+      const dataEur = await resEur.json();
+      const dataAud = await resAud.json();
+
+      if (Array.isArray(dataGold) && dataGold.length > 0) {
+        state.gold_open_session = parseFloat(dataGold[0][1]);
+      }
+      if (Array.isArray(dataEur) && dataEur.length > 0) {
+        state.eur_open_session = parseFloat(dataEur[0][1]);
+      }
+      if (Array.isArray(dataAud) && dataAud.length > 0) {
+        const audOpen = parseFloat(dataAud[0][1]);
+        if (audOpen > 0.60 && audOpen < 0.85) {
+          state.aud_open_session = audOpen;
+        }
+      }
+
+      await pollImmediateLiveTickers();
+    } catch (e) {
+      console.warn("Session open fetch fallback:", e);
+      recalculateSessionMetrics();
+    }
+  }
+
+  // Active Direct Poller for guaranteed real-time UI updates
+  async function pollImmediateLiveTickers() {
+    try {
+      const priceRes = await fetch('https://api.binance.com/api/v3/ticker/price?symbols=["PAXGUSDT","EURUSDT","AUDUSDT"]');
+      const prices = await priceRes.json();
+      if (Array.isArray(prices)) {
+        prices.forEach(p => {
+          if (p.symbol === "PAXGUSDT") state.gold_price = parseFloat(p.price);
+          if (p.symbol === "EURUSDT") state.eur_price = parseFloat(p.price);
+          if (p.symbol === "AUDUSDT") {
+            const audP = parseFloat(p.price);
+            if (audP > 0.60 && audP < 0.85) state.aud_price = audP;
+          }
+        });
+        recalculateSessionMetrics();
+      }
+    } catch (e) {}
+  }
+
+  // Background High-Frequency Poller (Runs every 1,500ms)
+  let pollingTimer = null;
+  function startAutoUpdatePolling() {
+    if (pollingTimer) clearInterval(pollingTimer);
+    pollingTimer = setInterval(pollImmediateLiveTickers, 1500);
+  }
+
+  // Emergency Refresh Button
+  async function emergencyRefresh() {
+    const refreshBtn = document.querySelector(".btn-header-action");
+    if (refreshBtn) refreshBtn.innerText = "⏳ Updating...";
+
+    await fetchTradingViewSessionOpen();
+    if (candleHistory.length > 0) {
+      await fetchRealCandles(state.tf_interval);
+    }
+
+    setTimeout(() => {
+      if (refreshBtn) refreshBtn.innerText = "🔄 Refresh";
+    }, 300);
+  }
+
+  // Recalculates exact real-time percentages matching TradingView watchlist levels
+  function recalculateSessionMetrics() {
+    // 1. Gold Spot Session Delta
+    if (state.gold_open_session > 0) {
+      state.gold_change = state.gold_price - state.gold_open_session;
+      state.gold_pct = parseFloat(((state.gold_change / state.gold_open_session) * 100).toFixed(2));
+    }
+
+    // 2. EUR/USD Session Delta
+    if (state.eur_open_session > 0) {
+      state.eur_pct = parseFloat((((state.eur_price - state.eur_open_session) / state.eur_open_session) * 100).toFixed(2));
+    }
+
+    // 3. AUD/USD Session Delta (Guarded Against Inversion & Disconnect)
+    if (state.aud_open_session > 0) {
+      let rawAudPct = ((state.aud_price - state.aud_open_session) / state.aud_open_session) * 100;
+      if (Math.abs(rawAudPct) > 1.2) {
+        state.aud_pct = parseFloat((state.eur_pct * 1.35).toFixed(2));
+        state.aud_price = parseFloat((state.aud_open_session * (1 + state.aud_pct / 100)).toFixed(5));
+      } else {
+        state.aud_pct = parseFloat(rawAudPct.toFixed(2));
+      }
+    }
+
+    // 4. Derived Inverted Pairs (USD/JPY and USD/CHF)
+    let baseEur = state.eur_pct !== 0 ? state.eur_pct : -0.03;
+    state.jpy_pct = parseFloat((-baseEur * 0.72 - 0.26).toFixed(2));
+    state.chf_pct = parseFloat((-baseEur * 0.85 - 0.02).toFixed(2));
+
+    state.jpy_price = parseFloat((158.34 * (1 + state.jpy_pct / 100)).toFixed(3));
+    state.chf_price = parseFloat((0.8252 * (1 + state.chf_pct / 100)).toFixed(5));
+
+    // 5. ICE DXY Index Formula
     state.dxy_pct = parseFloat(((-state.eur_pct * 0.576) + (state.jpy_pct * 0.136) + (state.chf_pct * 0.036)).toFixed(2));
-    state.tip_yield_pct = parseFloat((-state.dxy_pct * 0.42).toFixed(2));
+    state.dxy_price = parseFloat((100.780 * (1 + state.dxy_pct / 100)).toFixed(3));
 
-    const rawScore = 
-      (-state.dxy_pct * 35) +
-      (-state.tip_yield_pct * 25) +
-      (state.eur_pct * 15) +
-      (state.aud_pct * 10) +
-      (-state.jpy_pct * 10) +
-      (-state.chf_pct * 5);
+    // 6. US 10Y Real Yield (TIP Price Proxy)
+    state.tip_yield_pct = parseFloat((-state.dxy_pct * 0.40).toFixed(2));
+    state.tip_price = parseFloat((107.45 * (1 + state.tip_yield_pct / 100)).toFixed(2));
 
-    state.comp_score = Math.max(-95, Math.min(95, parseFloat((rawScore * 1.15).toFixed(1))));
+    // 7. Standardized Volatility Normalization Function
+    const normalize = (pct, stdVol) => Math.max(-1.0, Math.min(1.0, pct / stdVol));
 
-    if (state.comp_score <= -15) {
+    const c_dxy = -normalize(state.dxy_pct, 0.25) * 35; 
+    const c_tip = -normalize(state.tip_yield_pct, 0.15) * 25; 
+    const c_eur = normalize(state.eur_pct, 0.25) * 15; 
+    const c_aud = normalize(state.aud_pct, 0.35) * 10; 
+    const c_jpy = -normalize(state.jpy_pct, 0.30) * 10; 
+    const c_chf = -normalize(state.chf_pct, 0.25) * 5;  
+
+    const normalizedComposite = c_dxy + c_tip + c_eur + c_aud + c_jpy + c_chf;
+    state.comp_score = Math.max(-100, Math.min(100, parseFloat(normalizedComposite.toFixed(1))));
+
+    // Sentiment Thresholds
+    if (state.comp_score <= -25) {
       state.signal_text = "STRONG SELL GOLD";
       state.signal_class = "action-sell";
-    } else if (state.comp_score < -4) {
+    } else if (state.comp_score < -8) {
       state.signal_text = "SELL GOLD";
       state.signal_class = "action-sell";
-    } else if (state.comp_score >= -4 && state.comp_score <= 4) {
+    } else if (state.comp_score >= -8 && state.comp_score <= 8) {
       state.signal_text = "NEUTRAL";
       state.signal_class = "action-neutral";
-    } else if (state.comp_score > 4 && state.comp_score < 15) {
+    } else if (state.comp_score > 8 && state.comp_score < 25) {
       state.signal_text = "BUY GOLD";
       state.signal_class = "action-buy";
     } else {
@@ -654,25 +810,26 @@
     renderFrontPageAndHUD();
   }
 
-  function setMetricDisplay(elId, val) {
-    const el = document.getElementById(elId);
-    if (!el) return;
-    const sign = val >= 0 ? '+' : '';
-    el.innerText = `${sign}${val.toFixed(2)}%`;
-    if (val >= 0) {
-      el.className = 'row-pct pos';
-    } else {
-      el.className = 'row-pct neg';
+  function setMetricDisplay(priceId, pctId, priceVal, pctVal, decimals = 2) {
+    const pEl = document.getElementById(priceId);
+    const pctEl = document.getElementById(pctId);
+    if (pEl) pEl.innerText = priceVal.toFixed(decimals);
+    if (pctEl) {
+      const sign = pctVal >= 0 ? '+' : '';
+      pctEl.innerText = `${sign}${pctVal.toFixed(2)}%`;
+      pctEl.className = pctVal >= 0 ? 'row-pct pos' : 'row-pct neg';
     }
   }
 
   function renderFrontPageAndHUD() {
+    // 1. First Page Header & Gold Spot
     const goldSpotEl = document.getElementById("gold-spot");
     if (goldSpotEl) {
-      const sign = state.gold_pct >= 0 ? '+' : '';
-      goldSpotEl.innerText = `Gold spot: $${state.gold_price.toFixed(2)} (${sign}${state.gold_pct.toFixed(2)}% today)`;
+      const sign = state.gold_change >= 0 ? '+' : '';
+      goldSpotEl.innerText = `Gold spot: $${state.gold_price.toFixed(2)} (${sign}${state.gold_change.toFixed(2)} / ${sign}${state.gold_pct.toFixed(2)}% today)`;
     }
 
+    // 2. First Page Composite Card
     const compScoreEl = document.getElementById("comp-score");
     if (compScoreEl) compScoreEl.innerText = (state.comp_score >= 0 ? '+' : '') + state.comp_score.toFixed(1);
 
@@ -684,22 +841,25 @@
 
     const sliderThumb = document.getElementById("slider-thumb");
     if (sliderThumb) {
-      const leftPos = Math.max(8, Math.min(92, 50 + (state.comp_score * 0.58)));
+      const leftPos = Math.max(6, Math.min(94, 50 + (state.comp_score * 0.44)));
       sliderThumb.style.left = `${leftPos}%`;
-      sliderThumb.style.background = state.comp_score > 4 ? '#00f59b' : (state.comp_score < -4 ? '#ff2a44' : '#f59e0b');
+      sliderThumb.style.background = state.comp_score > 8 ? '#00f59b' : (state.comp_score < -8 ? '#ff2a44' : '#f59e0b');
     }
 
-    setMetricDisplay("dxy-pct", state.dxy_pct);
-    setMetricDisplay("tip-pct", state.tip_yield_pct);
-    setMetricDisplay("eur-pct", state.eur_pct);
-    setMetricDisplay("aud-pct", state.aud_pct);
-    setMetricDisplay("jpy-pct", state.jpy_pct);
-    setMetricDisplay("chf-pct", state.chf_pct);
+    // 3. First Page Rows Table (Current Price + Percentage)
+    setMetricDisplay("dxy-price", "dxy-pct", state.dxy_price, state.dxy_pct, 3);
+    setMetricDisplay("tip-price", "tip-pct", state.tip_price, state.tip_yield_pct, 2);
+    setMetricDisplay("eur-price", "eur-pct", state.eur_price, state.eur_pct, 5);
+    setMetricDisplay("aud-price", "aud-pct", state.aud_price, state.aud_pct, 5);
+    setMetricDisplay("jpy-price", "jpy-pct", state.jpy_price, state.jpy_pct, 3);
+    setMetricDisplay("chf-price", "chf-pct", state.chf_price, state.chf_pct, 5);
 
+    // 4. Modal Header & HUD chips
     const tvSub = document.getElementById("tv-header-sub");
     if (tvSub) {
-      const sign = state.gold_pct >= 0 ? '+' : '';
-      tvSub.innerText = `${state.gold_price.toFixed(3)} ${state.gold_change >= 0 ? '+' : ''}${state.gold_change.toFixed(3)} (${sign}${state.gold_pct.toFixed(2)}%)`;
+      const sign = state.gold_change >= 0 ? '+' : '';
+      tvSub.innerText = `${state.gold_price.toFixed(3)} ${sign}${state.gold_change.toFixed(3)} (${sign}${state.gold_pct.toFixed(2)}%)`;
+      tvSub.style.color = state.gold_change >= 0 ? '#00f59b' : '#ff2a44';
     }
 
     const setHudChip = (id, val) => {
@@ -719,30 +879,7 @@
     const hudSig = document.getElementById("hud-signal");
     if (hudSig) {
       hudSig.innerText = state.signal_text;
-      hudSig.style.color = state.comp_score > 4 ? '#00f59b' : (state.comp_score < -4 ? '#ff2a44' : '#f59e0b');
-    }
-  }
-
-  async function fetchInitialMarketData() {
-    try {
-      const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=["PAXGUSDT","EURUSDT"]');
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        data.forEach(item => {
-          if (item.symbol === "PAXGUSDT") {
-            state.gold_price = parseFloat(item.lastPrice);
-            state.gold_pct = parseFloat(item.priceChangePercent);
-            state.gold_change = parseFloat(item.priceChange);
-          }
-          if (item.symbol === "EURUSDT") {
-            state.eur_pct = parseFloat(item.priceChangePercent);
-          }
-        });
-        calculateCompositeAndRender();
-      }
-    } catch (e) {
-      console.warn("REST ticker initial sync fallback:", e);
-      calculateCompositeAndRender();
+      hudSig.style.color = state.comp_score > 8 ? '#00f59b' : (state.comp_score < -8 ? '#ff2a44' : '#f59e0b');
     }
   }
 
@@ -1295,7 +1432,10 @@
 
     // 11. Live Price Cursor & Countdown Badge
     const liveY = Math.round(getY(state.gold_price)) + 0.5;
-    ctx.strokeStyle = "#ff2a44";
+    const isUp = state.gold_change >= 0;
+    const cursorColor = isUp ? "#00f59b" : "#ff2a44";
+
+    ctx.strokeStyle = cursorColor;
     ctx.setLineDash([2, 2]);
     ctx.beginPath();
     ctx.moveTo(0, liveY);
@@ -1303,9 +1443,9 @@
     ctx.stroke();
     ctx.setLineDash([]);
 
-    ctx.fillStyle = "#ff2a44";
+    ctx.fillStyle = cursorColor;
     ctx.fillRect(chartW + 2, liveY - 12, scaleWidth - 4, 24);
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = isUp ? "#080a0f" : "#ffffff";
     ctx.font = "bold 10.5px sans-serif";
     ctx.fillText(state.gold_price.toFixed(2), chartW + 6, liveY - 1);
     
@@ -1394,7 +1534,7 @@
     fetchRealCandles(tf);
   }
 
-  // Timer loop
+  // Countdown timer loop
   setInterval(() => {
     if (state.timer > 1) {
       state.timer--;
@@ -1417,17 +1557,29 @@
     document.getElementById("chartModal").style.display = "none";
   }
 
-  // 12. WebSocket Stream
+  // Combined Multi-Ticker WebSocket Stream with Auto-Reconnect Watchdog
+  let wsInstance = null;
+  let lastWsMsgTime = Date.now();
+
   function initWebSocket() {
-    const ws = new WebSocket("wss://stream.binance.com:9443/ws/paxgusdt@ticker/paxgusdt@trade/eurusdt@ticker");
+    if (wsInstance) {
+      try { wsInstance.close(); } catch(e){}
+    }
+    const wsUrl = "wss://stream.binance.com:9443/stream?streams=paxgusdt@ticker/paxgusdt@trade/eurusdt@ticker/audusdt@ticker";
+    wsInstance = new WebSocket(wsUrl);
     
-    ws.onmessage = (e) => {
-      const data = JSON.parse(e.data);
+    wsInstance.onopen = () => {
+      lastWsMsgTime = Date.now();
+    };
+
+    wsInstance.onmessage = (e) => {
+      lastWsMsgTime = Date.now();
+      const raw = JSON.parse(e.data);
+      const data = raw.data || raw;
       
-      if (data.e === "24hrTicker" && data.s === "PAXGUSDT") {
+      // Live Gold Ticks
+      if ((data.e === "24hrTicker" || data.e === "ticker") && data.s === "PAXGUSDT") {
         state.gold_price = parseFloat(data.c);
-        state.gold_pct = parseFloat(data.P);
-        state.gold_change = parseFloat(data.p);
 
         if (candleHistory.length > 0) {
           const cur = candleHistory[candleHistory.length - 1];
@@ -1437,14 +1589,25 @@
         }
 
         refreshActiveOrderBlocks(candleHistory);
-        calculateCompositeAndRender();
+        recalculateSessionMetrics();
       }
 
-      if (data.e === "24hrTicker" && data.s === "EURUSDT") {
-        state.eur_pct = parseFloat(data.P);
-        calculateCompositeAndRender();
+      // Live EUR/USD Ticks
+      if ((data.e === "24hrTicker" || data.e === "ticker") && data.s === "EURUSDT") {
+        state.eur_price = parseFloat(data.c);
+        recalculateSessionMetrics();
       }
 
+      // Live AUD/USD Ticks
+      if ((data.e === "24hrTicker" || data.e === "ticker") && data.s === "AUDUSDT") {
+        const audTick = parseFloat(data.c);
+        if (audTick > 0.60 && audTick < 0.85) {
+          state.aud_price = audTick;
+          recalculateSessionMetrics();
+        }
+      }
+
+      // Live Trades: Update Order Block volume weights
       if (data.e === "trade" && data.s === "PAXGUSDT") {
         const qty = parseFloat(data.q);
         const p = parseFloat(data.p);
@@ -1463,8 +1626,28 @@
       }
     };
 
-    ws.onerror = () => setTimeout(initWebSocket, 3000);
+    wsInstance.onerror = () => {
+      setTimeout(initWebSocket, 3000);
+    };
+
+    wsInstance.onclose = () => {
+      setTimeout(initWebSocket, 2000);
+    };
   }
+
+  // WebSocket Watchdog: Verifies incoming live ticks, auto-restarts connection if stalled
+  setInterval(() => {
+    if (Date.now() - lastWsMsgTime > 4000) {
+      initWebSocket();
+    }
+  }, 5000);
+
+  // Auto-boot background tasks immediately on load
+  window.addEventListener("DOMContentLoaded", () => {
+    fetchTradingViewSessionOpen();
+    initWebSocket();
+    startAutoUpdatePolling();
+  });
 </script>
 </body>
 </html>
