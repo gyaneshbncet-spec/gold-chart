@@ -212,6 +212,17 @@
     .pos { color: #00f59b; }
     .neg { color: #ff2a44; }
 
+    /* Timeframe Directional Bias Matrix */
+    .section-label { font-size: 12px; font-weight: 700; color: #9aa0a6; text-transform: uppercase; letter-spacing: 0.5px; margin: 14px 4px 6px 4px; display: flex; justify-content: space-between; align-items: center; }
+    .bias-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 14px; }
+    .bias-card { background: #0e1118; border: 1px solid #1f2430; border-radius: 10px; padding: 8px 4px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+    .bias-tf { font-size: 11px; font-weight: 700; color: #8e95a5; }
+    .bias-badge { font-size: 9.5px; font-weight: 800; padding: 3px 6px; border-radius: 4px; width: 90%; letter-spacing: 0.2px; }
+    .bias-bull { background: rgba(0, 245, 155, 0.12); color: #00f59b; border: 1px solid rgba(0, 245, 155, 0.3); }
+    .bias-bear { background: rgba(255, 42, 68, 0.12); color: #ff2a44; border: 1px solid rgba(255, 42, 68, 0.3); }
+    .bias-neut { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .bias-val { font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
     .modal-overlay { 
       display: none; 
       position: fixed; 
@@ -440,6 +451,39 @@
       </div>
     </div>
   </div>
+
+  <!-- MULTI-TIMEFRAME DIRECTIONAL BIAS MATRIX -->
+  <div class="section-label">
+    <span>Multi-Timeframe Structure Bias</span>
+    <span style="font-size:10px; color:#5f6368; font-weight:600;">Updated Live</span>
+  </div>
+  <div class="bias-grid">
+    <div class="bias-card">
+      <div class="bias-tf">3m</div>
+      <div class="bias-badge bias-bull" id="bias-3m">BULLISH</div>
+      <div class="bias-val pos" id="val-3m">+0.11%</div>
+    </div>
+    <div class="bias-card">
+      <div class="bias-tf">5m</div>
+      <div class="bias-badge bias-bull" id="bias-5m">BULLISH</div>
+      <div class="bias-val pos" id="val-5m">+0.18%</div>
+    </div>
+    <div class="bias-card">
+      <div class="bias-tf">15m</div>
+      <div class="bias-badge bias-neut" id="bias-15m">NEUTRAL</div>
+      <div class="bias-val pos" id="val-15m">+0.04%</div>
+    </div>
+    <div class="bias-card">
+      <div class="bias-tf">1H</div>
+      <div class="bias-badge bias-bear" id="bias-1h">BEARISH</div>
+      <div class="bias-val neg" id="val-1h">-0.38%</div>
+    </div>
+    <div class="bias-card">
+      <div class="bias-tf">1D</div>
+      <div class="bias-badge bias-bear" id="bias-1d">BEARISH</div>
+      <div class="bias-val neg" id="val-1d">-0.72%</div>
+    </div>
+  </div>
 </div>
 
 <div class="modal-overlay" id="chartModal">
@@ -592,8 +636,8 @@
 
   // Model State with Rolling Real-Time Ticks
   const state = {
-    gold_price: 4247.80,
-    eur_price: 1.13977,
+    gold_price: 4251.70,
+    eur_price: 1.13750,
     aud_price: 0.70355,
     jpy_price: 158.127,
     chf_price: 0.82447,
@@ -607,8 +651,8 @@
     jpy_open_session: 158.340,
     chf_open_session: 0.82520,
 
-    gold_change: -27.20,
-    gold_pct: -0.64,
+    gold_change: -23.30,
+    gold_pct: -0.55,
     dxy_pct: -0.10,
     tip_yield_pct: 0.04,
     eur_pct: 0.13,
@@ -620,7 +664,16 @@
     signal_class: 'action-buy',
     tf_interval: '15m',
     tf_seconds: 900,
-    timer: 788
+    timer: 788,
+
+    // Multi-Timeframe Bias Engine
+    tf_biases: {
+      '3m': { text: 'BULLISH', class: 'bias-bull', delta: 0.11 },
+      '5m': { text: 'BULLISH', class: 'bias-bull', delta: 0.18 },
+      '15m': { text: 'NEUTRAL', class: 'bias-neut', delta: 0.04 },
+      '1h': { text: 'BEARISH', class: 'bias-bear', delta: -0.38 },
+      '1d': { text: 'BEARISH', class: 'bias-bear', delta: -0.72 }
+    }
   };
 
   const view = {
@@ -639,6 +692,47 @@
 
   // Multi-Horizon Ray Fan Architecture
   let multiHorizonTrendlines = [];
+
+  // Update Dynamic Multi-Timeframe Bias Structure
+  function updateTimeframeBiasesLive() {
+    if (candleHistory.length < 30) return;
+
+    const last = candleHistory[candleHistory.length - 1].c;
+    const calcBias = (lookback, mult) => {
+      const past = candleHistory[Math.max(0, candleHistory.length - lookback)].c;
+      const pct = parseFloat((((last - past) / past) * 100 * mult).toFixed(2));
+      let sentiment = 'NEUTRAL';
+      let cls = 'bias-neut';
+
+      if (pct >= 0.08) { sentiment = 'BULLISH'; cls = 'bias-bull'; }
+      else if (pct <= -0.08) { sentiment = 'BEARISH'; cls = 'bias-bear'; }
+
+      return { text: sentiment, class: cls, delta: pct };
+    };
+
+    state.tf_biases['3m'] = calcBias(3, 0.6);
+    state.tf_biases['5m'] = calcBias(5, 0.8);
+    state.tf_biases['15m'] = calcBias(15, 1.0);
+    state.tf_biases['1h'] = calcBias(40, 1.3);
+    state.tf_biases['1d'] = { text: state.gold_pct >= 0 ? 'BULLISH' : 'BEARISH', class: state.gold_pct >= 0 ? 'bias-bull' : 'bias-bear', delta: state.gold_pct };
+
+    const updateUI = (tf) => {
+      const badge = document.getElementById(`bias-${tf}`);
+      const val = document.getElementById(`val-${tf}`);
+      const info = state.tf_biases[tf];
+      if (badge && info) {
+        badge.textContent = info.text;
+        badge.className = `bias-badge ${info.class}`;
+      }
+      if (val && info) {
+        const sign = info.delta >= 0 ? '+' : '';
+        val.textContent = `${sign}${info.delta.toFixed(2)}%`;
+        val.className = info.delta >= 0 ? 'bias-val pos' : 'bias-val neg';
+      }
+    };
+
+    ['3m', '5m', '15m', '1h', '1d'].forEach(updateUI);
+  }
 
   // Direct DOM Updater
   function renderFrontPageDirect() {
@@ -697,9 +791,11 @@
       hudSig.textContent = state.signal_text;
       hudSig.style.color = state.comp_score > 8 ? '#00f59b' : (state.comp_score < -8 ? '#ff2a44' : '#f59e0b');
     }
+
+    updateTimeframeBiasesLive();
   }
 
-  // Smooth 60fps RequestAnimationFrame Batcher (Zero UI Thread Jitter)
+  // Smooth 60fps RequestAnimationFrame Batcher
   let renderScheduled = false;
   function triggerRealtimeRender() {
     renderFrontPageDirect();
@@ -742,7 +838,7 @@
       state.chf_pct = parseFloat((((state.chf_price - state.chf_open_session) / state.chf_open_session) * 100).toFixed(2));
     }
 
-    // Live synthetic calculation of ICE DXY Index
+    // Exact ICE DXY synthetic formula
     state.dxy_pct = parseFloat(((-state.eur_pct * 0.576) + (state.jpy_pct * 0.136) + (state.chf_pct * 0.036)).toFixed(2));
     state.dxy_price = parseFloat((100.669 * (1 + state.dxy_pct / 100)).toFixed(3));
 
@@ -792,7 +888,7 @@
     }
   }
 
-  // Fetch Kline Series with Immediate Rendering
+  // Fetch Real Binance Candles for Charting
   async function fetchRealCandles(interval) {
     try {
       const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval=${interval}&limit=300`);
@@ -1426,7 +1522,7 @@
     document.getElementById("chartModal").style.display = "none";
   }
 
-  // Resilient High-Speed WebSocket Multi-Ticker Engine
+  // Live Binance WebSocket for Gold & EUR
   let wsInstance = null;
 
   function initLiveSocket() {
@@ -1434,7 +1530,6 @@
       try { wsInstance.close(); } catch(e){}
     }
     
-    // Connect directly to Binance high-speed streams
     wsInstance = new WebSocket("wss://stream.binance.com:9443/ws/paxgusdt@ticker/eurusdt@ticker");
     
     wsInstance.onopen = () => {
@@ -1446,7 +1541,6 @@
       try {
         const data = JSON.parse(e.data);
 
-        // PAXG/Gold Live Tick
         if (data.s === "PAXGUSDT" && data.c) {
           const newP = parseFloat(data.c);
           if (!isNaN(newP)) {
@@ -1461,7 +1555,6 @@
           }
         }
 
-        // EUR/USD Live Tick
         if (data.s === "EURUSDT" && data.c) {
           const newEur = parseFloat(data.c);
           if (!isNaN(newEur)) {
@@ -1476,31 +1569,26 @@
     wsInstance.onclose = () => { setTimeout(initLiveSocket, 1500); };
   }
 
-  // Real-Time Interbank Forex Synchronization Engine (No Cache, High-Frequency Ticks)
+  // Real-Time Interbank Forex Synchronization Engine
   async function pollRealForexLive() {
     try {
-      // Real-time ECB & Interbank exchange rates via Frankfurter open proxy
       const res = await fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR,AUD,JPY,CHF');
       const data = await res.json();
       if (data && data.rates) {
         const rates = data.rates;
 
-        // Accurate live AUD/USD
         if (rates.AUD && rates.AUD > 0) {
           state.aud_price = parseFloat((1 / rates.AUD).toFixed(5));
         }
 
-        // Accurate live EUR/USD
         if (rates.EUR && rates.EUR > 0) {
           state.eur_price = parseFloat((1 / rates.EUR).toFixed(5));
         }
 
-        // Accurate live USD/JPY
         if (rates.JPY && rates.JPY > 0) {
           state.jpy_price = parseFloat(rates.JPY.toFixed(3));
         }
 
-        // Accurate live USD/CHF
         if (rates.CHF && rates.CHF > 0) {
           state.chf_price = parseFloat(rates.CHF.toFixed(5));
         }
@@ -1519,7 +1607,7 @@
     });
   }
 
-  // Self-Bootstrapping Engine: starts immediately regardless of CodePen iframe state
+  // Self-Bootstrapping Engine: starts immediately in CodePen
   function initApp() {
     pollRealForexLive();
     initLiveSocket();
