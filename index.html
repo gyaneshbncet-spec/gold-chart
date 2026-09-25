@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Gold Live Stream</title>
+  <title>Gold & Multi-Asset Live Stream</title>
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#080a0f">
@@ -200,7 +200,7 @@
     .btn-chart { width: 100%; background: #b48312; color: #ffffff; border: none; padding: 13px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 14px; transition: background 0.2s; }
     .btn-chart:active { background: #966b0a; }
 
-    /* FRONT PAGE BIAS HUB */
+    /* FRONT PAGE STRUCTURE BIAS HUB */
     .front-bias-hub {
       background: #131722;
       border: 1px solid #1f2430;
@@ -242,6 +242,27 @@
       padding: 2px 4px;
       border-radius: 4px;
       width: 92%;
+    }
+
+    /* WIDGET CARDS GRID FOR ALL 4+ ASSETS */
+    .widget-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .widget-box {
+      background: #131722;
+      border: 1px solid #1f2430;
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .widget-box-title {
+      font-size: 11px;
+      color: #848e9c;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 4px;
     }
 
     .rows-card { border: 1px solid #1f2430; border-radius: 14px; padding: 2px 14px; margin-bottom: 14px; background: #0e1118; }
@@ -478,6 +499,46 @@
     </div>
   </div>
 
+  <!-- DIRECT TRADINGVIEW WIDGETS FOR ALL 4+ CORRELATION PAIRS -->
+  <div class="widget-grid">
+    <div class="widget-box">
+      <div class="widget-box-title">DXY (US Dollar Index)</div>
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+        { "symbol": "CAPITALCOM:DXY", "width": "100%", "isTransparent": true, "colorTheme": "dark", "locale": "en" }
+        </script>
+      </div>
+    </div>
+    <div class="widget-box">
+      <div class="widget-box-title">EUR/USD</div>
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+        { "symbol": "FX:EURUSD", "width": "100%", "isTransparent": true, "colorTheme": "dark", "locale": "en" }
+        </script>
+      </div>
+    </div>
+    <div class="widget-box">
+      <div class="widget-box-title">USD/JPY</div>
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+        { "symbol": "FX:USDJPY", "width": "100%", "isTransparent": true, "colorTheme": "dark", "locale": "en" }
+        </script>
+      </div>
+    </div>
+    <div class="widget-box">
+      <div class="widget-box-title">AUD/USD</div>
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+        { "symbol": "FX:AUDUSD", "width": "100%", "isTransparent": true, "colorTheme": "dark", "locale": "en" }
+        </script>
+      </div>
+    </div>
+  </div>
+
   <div class="rows-card">
     <div class="row">
       <div>
@@ -542,7 +603,7 @@
   </div>
 </div>
 
-<!-- Chart Modal with Bias Multi-Timeframe Matrix in HUD Header -->
+<!-- Chart Modal -->
 <div class="modal-overlay" id="chartModal">
   <div class="modal-container">
     <div class="tv-top-bar">
@@ -724,7 +785,6 @@
     dxy_price: 101.180,
     tip_price: 107.42,
 
-    // Real Midnight UTC Opens
     gold_open_session: 4278.80,
     eur_open_session: 1.13815,
     aud_open_session: 0.70340,
@@ -741,13 +801,13 @@
     jpy_pct: 0.34,
     chf_pct: 0.18,
     comp_score: -19.4,
+    smoothed_score: -19.4,
     signal_text: 'SELL GOLD',
     signal_class: 'action-sell',
     tf_interval: '15m',
     tf_seconds: 900,
     timer: 788,
 
-    // Multi-Timeframe Bias Engine
     tf_biases: {
       '3m': { text: 'BEARISH', class: 'chip-bear', delta: -0.08 },
       '5m': { text: 'BEARISH', class: 'chip-bear', delta: -0.12 },
@@ -770,11 +830,9 @@
   let allCandidateSupplyOBs = [];
   let storedDemandOBs = [];
   let storedSupplyOBs = [];
-
-  // Multi-Horizon Ray Fan Architecture
   let multiHorizonTrendlines = [];
 
-  // Update Dynamic Multi-Timeframe Bias Structure (Synced for both Front Page and Chart)
+  // Update Dynamic Multi-Timeframe Bias Structure
   function updateChartBiasesLive() {
     if (candleHistory.length >= 20) {
       const last = candleHistory[candleHistory.length - 1].c;
@@ -802,10 +860,8 @@
     }
 
     const updateUI = (tf) => {
-      // Update Chart HUD Header
       const badge = document.getElementById(`cb-${tf}`);
       const val = document.getElementById(`cv-${tf}`);
-      // Update Front Page Hub
       const fBadge = document.getElementById(`fb-${tf}`);
       const fVal = document.getElementById(`fv-${tf}`);
 
@@ -848,7 +904,7 @@
     }
 
     const compScoreEl = document.getElementById("comp-score");
-    if (compScoreEl) compScoreEl.textContent = (state.comp_score >= 0 ? '+' : '') + state.comp_score.toFixed(1);
+    if (compScoreEl) compScoreEl.textContent = (state.smoothed_score >= 0 ? '+' : '') + state.smoothed_score.toFixed(1);
 
     const compActionEl = document.getElementById("comp-action");
     if (compActionEl) {
@@ -858,9 +914,9 @@
 
     const sliderThumb = document.getElementById("slider-thumb");
     if (sliderThumb) {
-      const leftPos = Math.max(6, Math.min(94, 50 + (state.comp_score * 0.44)));
+      const leftPos = Math.max(6, Math.min(94, 50 + (state.smoothed_score * 0.44)));
       sliderThumb.style.left = `${leftPos}%`;
-      sliderThumb.style.background = state.comp_score <= -8 ? '#ff2a44' : (state.comp_score >= 8 ? '#00f59b' : '#f59e0b');
+      sliderThumb.style.background = state.smoothed_score <= -8 ? '#ff2a44' : (state.smoothed_score >= 8 ? '#00f59b' : '#f59e0b');
     }
 
     setMetricRow("dxy-price", "dxy-pct", state.dxy_price, state.dxy_pct, 3);
@@ -873,8 +929,8 @@
     const tvSub = document.getElementById("tv-header-sub");
     if (tvSub) {
       const sign = state.gold_change >= 0 ? '+' : '';
-      tvSub.textContent = `${state.gold_price.toFixed(3)} ${sign}${state.gold_change.toFixed(3)} (${sign}${state.gold_pct.toFixed(2)}%)`;
-      tvSub.style.color = state.gold_change >= 0 ? '#00f59b' : '#ff2a44';
+      tvSub.textContent = `${state.gold_price.toFixed(3)} ${sign}`;
+      tvSub.style.color = '#00f59b';
     }
 
     updateChartBiasesLive();
@@ -901,7 +957,7 @@
     triggerRealtimeRender();
   }
 
-  // Proportional Normalized Correlation Engine
+  // Proportional Normalized Correlation Engine with Smoothing
   function recalculateMetricsInstant() {
     if (state.gold_open_session > 0) {
       state.gold_change = state.gold_price - state.gold_open_session;
@@ -924,7 +980,6 @@
       state.chf_pct = parseFloat((((state.chf_price - state.chf_open_session) / state.chf_open_session) * 100).toFixed(2));
     }
 
-    // Exact ICE DXY formula
     state.dxy_pct = parseFloat(((-state.eur_pct * 0.576) + (state.jpy_pct * 0.136) + (state.chf_pct * 0.036)).toFixed(2));
     state.dxy_price = parseFloat((state.dxy_open_session * (1 + state.dxy_pct / 100)).toFixed(3));
 
@@ -943,16 +998,19 @@
     const normalizedComposite = c_dxy + c_tip + c_eur + c_aud + c_jpy + c_chf;
     state.comp_score = Math.max(-100, Math.min(100, parseFloat(normalizedComposite.toFixed(1))));
 
-    if (state.comp_score <= -25) {
+    // Smooth composite score to prevent erratic front-page jitter
+    state.smoothed_score = parseFloat((0.88 * state.smoothed_score + 0.12 * state.comp_score).toFixed(1));
+
+    if (state.smoothed_score <= -25) {
       state.signal_text = "STRONG SELL GOLD";
       state.signal_class = "action-sell";
-    } else if (state.comp_score < -8) {
+    } else if (state.smoothed_score < -8) {
       state.signal_text = "SELL GOLD";
       state.signal_class = "action-sell";
-    } else if (state.comp_score >= -8 && state.comp_score <= 8) {
+    } else if (state.smoothed_score >= -8 && state.smoothed_score <= 8) {
       state.signal_text = "NEUTRAL";
       state.signal_class = "action-neutral";
-    } else if (state.comp_score > 8 && state.comp_score < 25) {
+    } else if (state.smoothed_score > 8 && state.smoothed_score < 25) {
       state.signal_text = "BUY GOLD";
       state.signal_class = "action-buy";
     } else {
@@ -1199,7 +1257,7 @@
           if (Math.abs(candle.h - lineY) <= 0.5 * atr && candle.c <= lineY) touches.push({ i: k, p: candle.h });
         } else {
           if (candle.c < lineY - 0.30 * atr) { breakIndex = k; break; }
-          if (Math.abs(candle.l - lineY) <= 0.5 * atr && candle.c >= lineY) touches.push({ i: k, p: candle.l });
+          if (Math.abs(candle.h - lineY) <= 0.5 * atr && candle.c >= lineY) touches.push({ i: k, p: candle.h });
         }
       }
 
@@ -1264,7 +1322,7 @@
     const dpr = window.devicePixelRatio || 1;
     const targetW = Math.round(rect.width * dpr);
     const targetH = Math.round(rect.height * dpr);
-    
+     
     if (canvas.width !== targetW || canvas.height !== targetH) {
       canvas.style.width = `${rect.width}px`;
       canvas.style.height = `${rect.height}px`;
@@ -1278,7 +1336,7 @@
 
     const w = rect.width;
     const h = rect.height;
-    
+     
     ctx.fillStyle = "#080a0f";
     ctx.fillRect(0, 0, w, h);
 
@@ -1492,12 +1550,12 @@
     ctx.strokeStyle = "#1f2430";
     ctx.lineWidth = 1;
     ctx.strokeRect(badgeX, badgeY, badgeW, badgeH);
-    
+     
     ctx.fillStyle = "#000000";
     ctx.font = "bold 11px sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(state.gold_price.toFixed(2), badgeX + (badgeW / 2), liveY - 1);
-    
+     
     const mins = Math.floor(state.timer / 60).toString().padStart(2, '0');
     const secs = (state.timer % 60).toString().padStart(2, '0');
     ctx.font = "bold 8.5px sans-serif";
@@ -1615,9 +1673,9 @@
     if (wsInstance) {
       try { wsInstance.close(); } catch(e){}
     }
-    
+     
     wsInstance = new WebSocket("wss://stream.binance.com:9443/stream?streams=paxgusdt@miniTicker/paxgusdt@trade/eurusdt@miniTicker");
-    
+     
     wsInstance.onopen = () => {
       const statusEl = document.getElementById("session-status");
       if (statusEl) statusEl.textContent = "● Real-Time Interbank Feed Synchronized";
