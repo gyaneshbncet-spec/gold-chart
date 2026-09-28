@@ -3,22 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Live Macro Matrix Dashboard</title>
+  <title>Gold & Multi-Asset Live Stream</title>
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#080a0f">
 
-  <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-    body {
-      margin: 0;
-      padding: 12px 8px;
-      background-color: #050608;
-      color: #e1e4ea;
-      display: flex;
-      justify-content: center;
-    }
+  <!-- Official TradingView widgets are loaded per-widget via s3.tradingview.com (iframe format) -->
 
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+    body { background-color: #050608; color: #e1e4ea; padding: 12px 8px; display: flex; justify-content: center; }
+    
     /* Security Lock Screen */
     .pin-lock-overlay {
       position: fixed;
@@ -205,12 +200,8 @@
     .slider-thumb { width: 20px; height: 9px; border-radius: 4px; position: absolute; top: -1px; transform: translateX(-50%); transition: left 0.15s ease-out; }
     .slider-labels { display: flex; justify-content: space-between; font-size: 11px; color: #787b86; margin-top: 4px; }
 
-    .btn-chart { width: 100%; background: #b48312; color: #ffffff; border: none; padding: 13px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; transition: background 0.2s; }
+    .btn-chart { width: 100%; background: #b48312; color: #ffffff; border: none; padding: 13px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 14px; transition: background 0.2s; }
     .btn-chart:active { background: #966b0a; }
-
-    .btn-dxy { width: 100%; background: #1e293b; color: #38bdf8; border: 1px solid #334155; padding: 13px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 14px; transition: all 0.2s; }
-    .btn-dxy:hover { background: #243247; border-color: #38bdf8; }
-    .btn-dxy:active { background: #172033; }
 
     /* FRONT PAGE STRUCTURE BIAS HUB */
     .front-bias-hub {
@@ -256,83 +247,78 @@
       width: 92%;
     }
 
-    /* 100% NATIVE RESPONSIVE ASSET MATRIX */
+    /* Target Dashboard Container for TradingView Web Components */
     .dashboard-card {
       width: 100%;
-      background-color: #11141c;
-      border: 1px solid #1f2430;
-      border-radius: 14px;
-      padding: 6px 14px;
+      background-color: #161a1e;
+      border: 1px solid #242930;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
       margin-bottom: 14px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
     }
     .asset-row {
+      position: relative;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #1f242b;
+      padding-bottom: 12px;
+    }
+    .asset-row:last-child {
+      margin-bottom: 0;
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .weight-subtitle {
+      font-size: 11px;
+      color: #848e9c;
+      margin-top: 4px;
+      display: block;
+      padding-left: 2px;
+      font-weight: 400;
+    }
+    .live-pair-main {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid #1a1e29;
+      gap: 12px;
     }
-    .asset-row:last-child {
-      border-bottom: none;
-    }
-    .asset-left {
+    .live-pair-left {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
+      gap: 2px;
     }
-    .asset-icon-badge {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: #181d28;
-      border: 1px solid #283042;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 800;
-      color: #94a3b8;
-    }
-    .asset-title {
-      font-size: 13.5px;
+    .live-pair-name {
+      font-size: 14px;
       font-weight: 700;
-      color: #f1f5f9;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      color: #ffffff;
+      letter-spacing: 0.3px;
     }
-    .weight-subtitle {
-      font-size: 10.5px;
-      color: #64748b;
-      margin-top: 3px;
-      font-weight: 500;
+    .live-pair-desc {
+      font-size: 11px;
+      color: #787b86;
     }
-    .asset-right {
-      text-align: right;
+    .live-pair-right {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 3px;
+      gap: 2px;
     }
-    .asset-price {
-      font-size: 13.5px;
+    .live-pair-price {
+      font-size: 16px;
       font-weight: 700;
-      color: #ffffff;
+      color: #e1e4ea;
       font-variant-numeric: tabular-nums;
     }
-    .pct-badge {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 5px;
+    .live-pair-chg {
+      font-size: 12px;
+      font-weight: 600;
       font-variant-numeric: tabular-nums;
-      display: inline-block;
     }
-    .pos-badge { background: rgba(0, 245, 155, 0.15); color: #00f59b; }
-    .neg-badge { background: rgba(255, 42, 68, 0.15); color: #ff2a44; }
+    .live-pair-chg.pos { color: #00f59b; }
+    .live-pair-chg.neg { color: #ff2a44; }
+    .live-pair-chg.flat { color: #f59e0b; }
 
-    /* Modals */
+    /* Chart Modal */
     .modal-overlay { 
       display: none; 
       position: fixed; 
@@ -368,7 +354,6 @@
     .tv-asset-info { display: flex; flex-direction: column; }
     .tv-asset-title { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #ffffff; }
     .tv-gold-dot { width: 14px; height: 14px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #080a0f; font-size: 8px; font-weight: 900; }
-    .tv-dxy-dot { width: 14px; height: 14px; background: #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #080a0f; font-size: 8px; font-weight: 900; }
     .tv-price-sub { font-size: 11.5px; font-weight: 600; color: #00f59b; margin-top: 2px; }
     .tv-controls { display: flex; align-items: center; gap: 8px; }
     .tv-pill-btn { border: 1px solid #1f2430; background: #131722; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 700; color: #e1e4ea; cursor: pointer; }
@@ -513,21 +498,20 @@
     </div>
   </div>
 
-  <!-- BUTTON 1: GOLD CHART (MODAL) -->
-  <button class="btn-chart" onclick="openChartModal()">
-    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 3h18v18H3V3z"/>
-    </svg>
-    Open Gold Chart (300 Bars)
-  </button>
-
-  <!-- BUTTON 2: DXY LIVE CHART (MODAL - CAPITALCOM:DXY FULL SIZE) -->
-  <button class="btn-dxy" onclick="openDxyModal()">
-    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-    </svg>
-    DXY LIVE CHART (CAPITALCOM:DXY)
-  </button>
+  <div style="display:flex; gap:10px; margin-bottom:14px;">
+    <button class="btn-chart" style="flex:1; margin-bottom:0;" onclick="openChartModal('gold')">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 3h18v18H3V3z"/>
+      </svg>
+      Open Gold Chart
+    </button>
+    <button class="btn-chart" style="flex:1; margin-bottom:0; background:#1e3a5f;" onclick="openChartModal('dxy')">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 3h18v18H3V3z"/>
+      </svg>
+      Open DXY Chart
+    </button>
+  </div>
 
   <!-- FRONT PAGE STRUCTURE BIAS HUB -->
   <div class="front-bias-hub">
@@ -564,110 +548,110 @@
     </div>
   </div>
 
-  <!-- NATIVE MATRIX ROWS CONNECTED DIRECTLY TO COMPOSITE CALCULATOR -->
+  <!-- LIVE 6-PAIR DASHBOARD (no TradingView iframes = never blocked) -->
   <div class="dashboard-card">
-        
+
     <!-- ROW 1: DXY -->
-    <div class="asset-row">
-      <div class="asset-left">
-        <div class="asset-icon-badge">DXY</div>
-        <div>
-          <div class="asset-title">DXY (US Dollar Index)</div>
-          <div class="weight-subtitle">35% weight &bull; Direct Real-Time Proximity</div>
+    <div class="asset-row live-pair-row">
+      <div class="live-pair-main">
+        <div class="live-pair-left">
+          <span class="live-pair-name">DXY</span>
+          <span class="live-pair-desc">US Dollar Index</span>
+        </div>
+        <div class="live-pair-right">
+          <span class="live-pair-price" id="lp-dxy">—</span>
+          <span class="live-pair-chg" id="lp-dxy-chg">—</span>
         </div>
       </div>
-      <div class="asset-right">
-        <div class="asset-price" id="row-dxy-price">101.180</div>
-        <div class="pct-badge pos-badge" id="row-dxy-pct">+0.08%</div>
-      </div>
+      <span class="weight-subtitle">35% weight - Direct Real-Time Market Proximity</span>
     </div>
 
     <!-- ROW 2: US 10Y Yield -->
-    <div class="asset-row">
-      <div class="asset-left">
-        <div class="asset-icon-badge">10Y</div>
-        <div>
-          <div class="asset-title">US 10Y Yield (via TIP)</div>
-          <div class="weight-subtitle">25% weight &bull; Very High &bull; Inverse flipped</div>
+    <div class="asset-row live-pair-row">
+      <div class="live-pair-main">
+        <div class="live-pair-left">
+          <span class="live-pair-name">US10Y</span>
+          <span class="live-pair-desc">10Y Treasury Yield (proxy)</span>
+        </div>
+        <div class="live-pair-right">
+          <span class="live-pair-price" id="lp-us10y">—</span>
+          <span class="live-pair-chg" id="lp-us10y-chg">—</span>
         </div>
       </div>
-      <div class="asset-right">
-        <div class="asset-price" id="row-tip-price">107.42</div>
-        <div class="pct-badge neg-badge" id="row-tip-pct">-0.03%</div>
-      </div>
+      <span class="weight-subtitle">25% weight - Very High - TIP price, Inverse flipped</span>
     </div>
 
     <!-- ROW 3: EURUSD -->
-    <div class="asset-row">
-      <div class="asset-left">
-        <div class="asset-icon-badge">EUR</div>
-        <div>
-          <div class="asset-title">EUR/USD</div>
-          <div class="weight-subtitle">15% weight &bull; High &bull; +75%/-80%</div>
+    <div class="asset-row live-pair-row">
+      <div class="live-pair-main">
+        <div class="live-pair-left">
+          <span class="live-pair-name">EURUSD</span>
+          <span class="live-pair-desc">Euro / US Dollar</span>
+        </div>
+        <div class="live-pair-right">
+          <span class="live-pair-price" id="lp-eur">—</span>
+          <span class="live-pair-chg" id="lp-eur-chg">—</span>
         </div>
       </div>
-      <div class="asset-right">
-        <div class="asset-price" id="row-eur-price">1.13780</div>
-        <div class="pct-badge neg-badge" id="row-eur-pct">-0.03%</div>
-      </div>
+      <span class="weight-subtitle">15% weight - High - +75%/-80%</span>
     </div>
 
     <!-- ROW 4: AUDUSD -->
-    <div class="asset-row">
-      <div class="asset-left">
-        <div class="asset-icon-badge">AUD</div>
-        <div>
-          <div class="asset-title">AUD/USD</div>
-          <div class="weight-subtitle">10% weight &bull; Mod/High &bull; +60%/-70%</div>
+    <div class="asset-row live-pair-row">
+      <div class="live-pair-main">
+        <div class="live-pair-left">
+          <span class="live-pair-name">AUDUSD</span>
+          <span class="live-pair-desc">Australian Dollar / USD</span>
+        </div>
+        <div class="live-pair-right">
+          <span class="live-pair-price" id="lp-aud">—</span>
+          <span class="live-pair-chg" id="lp-aud-chg">—</span>
         </div>
       </div>
-      <div class="asset-right">
-        <div class="asset-price" id="row-aud-price">0.70266</div>
-        <div class="pct-badge neg-badge" id="row-aud-pct">-0.10%</div>
-      </div>
+      <span class="weight-subtitle">10% weight - Mod/High - +60%/-70%</span>
     </div>
 
     <!-- ROW 5: USDJPY -->
-    <div class="asset-row">
-      <div class="asset-left">
-        <div class="asset-icon-badge">JPY</div>
-        <div>
-          <div class="asset-title">USD/JPY</div>
-          <div class="weight-subtitle">10% weight &bull; Moderate &bull; -55%/-65%</div>
+    <div class="asset-row live-pair-row">
+      <div class="live-pair-main">
+        <div class="live-pair-left">
+          <span class="live-pair-name">USDJPY</span>
+          <span class="live-pair-desc">US Dollar / Japanese Yen</span>
+        </div>
+        <div class="live-pair-right">
+          <span class="live-pair-price" id="lp-jpy">—</span>
+          <span class="live-pair-chg" id="lp-jpy-chg">—</span>
         </div>
       </div>
-      <div class="asset-right">
-        <div class="asset-price" id="row-jpy-price">158.809</div>
-        <div class="pct-badge pos-badge" id="row-jpy-pct">+0.34%</div>
-      </div>
+      <span class="weight-subtitle">10% weight - Moderate - -55%/-65%</span>
     </div>
 
     <!-- ROW 6: USDCHF -->
-    <div class="asset-row">
-      <div class="asset-left">
-        <div class="asset-icon-badge">CHF</div>
-        <div>
-          <div class="asset-title">USD/CHF</div>
-          <div class="weight-subtitle">5% weight &bull; Mod/High &bull; -65%/-75%</div>
+    <div class="asset-row live-pair-row">
+      <div class="live-pair-main">
+        <div class="live-pair-left">
+          <span class="live-pair-name">USDCHF</span>
+          <span class="live-pair-desc">US Dollar / Swiss Franc</span>
+        </div>
+        <div class="live-pair-right">
+          <span class="live-pair-price" id="lp-chf">—</span>
+          <span class="live-pair-chg" id="lp-chf-chg">—</span>
         </div>
       </div>
-      <div class="asset-right">
-        <div class="asset-price" id="row-chf-price">0.82710</div>
-        <div class="pct-badge pos-badge" id="row-chf-pct">+0.18%</div>
-      </div>
+      <span class="weight-subtitle">5% weight - Mod/High - -65%/-75%</span>
     </div>
 
   </div>
 </div>
 
-<!-- Gold Chart Modal -->
+<!-- Chart Modal -->
 <div class="modal-overlay" id="chartModal">
   <div class="modal-container">
     <div class="tv-top-bar">
       <div class="tv-asset-info">
         <div class="tv-asset-title">
-          <div class="tv-gold-dot">G</div>
-          CFDs on Gold (US$ / OZ) &bull; 300 Candles
+          <div class="tv-gold-dot" id="tv-asset-dot">G</div>
+          <span id="tv-asset-label">CFDs on Gold (US$ / OZ) &bull; 300 Candles</span>
         </div>
         <div class="tv-price-sub" id="tv-header-sub">Syncing...</div>
       </div>
@@ -725,28 +709,6 @@
 
     <div class="canvas-container" id="canvasContainer">
       <canvas id="tvCanvas"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- DXY CAPITALCOM FULL-SIZE TRADINGVIEW MODAL -->
-<div class="modal-overlay" id="dxyModal">
-  <div class="modal-container">
-    <div class="tv-top-bar">
-      <div class="tv-asset-info">
-        <div class="tv-asset-title">
-          <div class="tv-dxy-dot">D</div>
-          DXY &bull; U.S. Dollar Index (CAPITALCOM:DXY)
-        </div>
-        <div class="tv-price-sub" style="color:#38bdf8;">Official TradingView Advanced Chart</div>
-      </div>
-      <div class="tv-controls">
-        <button class="tv-close" onclick="closeDxyModal()">✕</button>
-      </div>
-    </div>
-    
-    <div style="flex:1; width:100%; height:100%; position:relative; background:#080a0f;">
-      <div id="tv_dxy_advanced_container" style="width:100%; height:100%;"></div>
     </div>
   </div>
 </div>
@@ -854,36 +816,31 @@
     setTimeout(unlockApp, 150);
   }
 
-  // Real-World Calibrated Market State with Live Continuous Engine
+  // Real-World Calibrated Market State
   const state = {
     gold_price: 4268.50,
+    eur_price: 1.13780,
+    aud_price: 0.70266,
+    jpy_price: 158.809,
+    chf_price: 0.82710,
+    dxy_price: 101.180,
+    tip_price: 107.42,
+
     gold_open_session: 4278.80,
+    eur_open_session: 1.13815,
+    aud_open_session: 0.70340,
+    jpy_open_session: 158.275,
+    chf_open_session: 0.82560,
+    dxy_open_session: 101.100,
+
     gold_change: -10.30,
     gold_pct: -0.24,
-
-    eur_price: 1.13780,
-    eur_open_session: 1.13815,
-    eur_pct: -0.03,
-
-    aud_price: 0.70266,
-    aud_open_session: 0.70340,
-    aud_pct: -0.10,
-
-    jpy_price: 158.809,
-    jpy_open_session: 158.275,
-    jpy_pct: 0.34,
-
-    chf_price: 0.82710,
-    chf_open_session: 0.82560,
-    chf_pct: 0.18,
-
-    dxy_price: 101.180,
-    dxy_open_session: 101.100,
     dxy_pct: 0.08,
-
-    tip_price: 107.42,
     tip_yield_pct: -0.03,
-
+    eur_pct: -0.03,
+    aud_pct: -0.10,
+    jpy_pct: 0.34,
+    chf_pct: 0.18,
     comp_score: -19.4,
     smoothed_score: -19.4,
     signal_text: 'SELL GOLD',
@@ -891,6 +848,7 @@
     tf_interval: '15m',
     tf_seconds: 900,
     timer: 788,
+    chartAsset: 'gold', // 'gold' | 'dxy'
 
     tf_biases: {
       '3m': { text: 'BEARISH', class: 'chip-bear', delta: -0.08 },
@@ -909,89 +867,39 @@
     initialOffsetX: 0
   };
 
+  // Separate stores so Gold and DXY never mix
+  const chartStore = {
+    gold: { candles: [], demand: [], supply: [], allDemand: [], allSupply: [], rays: [] },
+    dxy:  { candles: [], demand: [], supply: [], allDemand: [], allSupply: [], rays: [] }
+  };
   let candleHistory = [];
   let allCandidateDemandOBs = [];
   let allCandidateSupplyOBs = [];
   let storedDemandOBs = [];
   let storedSupplyOBs = [];
   let multiHorizonTrendlines = [];
+  let isFetchingCandles = false;
 
-  // Update DOM Display Elements Synchronously
-  function setAssetRow(priceId, pctId, price, pct, decimals = 5) {
-    const pEl = document.getElementById(priceId);
-    const bEl = document.getElementById(pctId);
-    if (pEl) pEl.textContent = price.toFixed(decimals);
-    if (bEl) {
-      const sign = pct >= 0 ? '+' : '';
-      bEl.textContent = `${sign}${pct.toFixed(2)}%`;
-      bEl.className = pct >= 0 ? 'pct-badge pos-badge' : 'pct-badge neg-badge';
-    }
+  function saveActiveStore() {
+    const a = state.chartAsset === 'dxy' ? 'dxy' : 'gold';
+    chartStore[a] = {
+      candles: candleHistory.slice(),
+      demand: storedDemandOBs.slice(),
+      supply: storedSupplyOBs.slice(),
+      allDemand: allCandidateDemandOBs.slice(),
+      allSupply: allCandidateSupplyOBs.slice(),
+      rays: multiHorizonTrendlines.slice()
+    };
   }
-
-  // Proportional Normalized Correlation Engine with Live Updating
-  function recalculateMetricsInstant() {
-    if (state.gold_open_session > 0) {
-      state.gold_change = state.gold_price - state.gold_open_session;
-      state.gold_pct = parseFloat(((state.gold_change / state.gold_open_session) * 100).toFixed(2));
-    }
-
-    if (state.eur_open_session > 0) {
-      state.eur_pct = parseFloat((((state.eur_price - state.eur_open_session) / state.eur_open_session) * 100).toFixed(2));
-    }
-
-    if (state.aud_open_session > 0) {
-      state.aud_pct = parseFloat((((state.aud_price - state.aud_open_session) / state.aud_open_session) * 100).toFixed(2));
-    }
-
-    if (state.jpy_open_session > 0) {
-      state.jpy_pct = parseFloat((((state.jpy_price - state.jpy_open_session) / state.jpy_open_session) * 100).toFixed(2));
-    }
-
-    if (state.chf_open_session > 0) {
-      state.chf_pct = parseFloat((((state.chf_price - state.chf_open_session) / state.chf_open_session) * 100).toFixed(2));
-    }
-
-    // Dynamic Interbank Basket Engine for DXY and TIP
-    state.dxy_pct = parseFloat(((-state.eur_pct * 0.576) + (state.jpy_pct * 0.136) + (state.chf_pct * 0.036)).toFixed(2));
-    state.dxy_price = parseFloat((state.dxy_open_session * (1 + state.dxy_pct / 100)).toFixed(3));
-
-    state.tip_yield_pct = parseFloat((-state.dxy_pct * 0.40).toFixed(2));
-    state.tip_price = parseFloat((107.42 * (1 + state.tip_yield_pct / 100)).toFixed(2));
-
-    // Dynamic Multi-Asset Weight Calculation Formula
-    const normalize = (pct, stdVol) => Math.max(-1.0, Math.min(1.0, pct / stdVol));
-
-    const c_dxy = -normalize(state.dxy_pct, 0.35) * 35;
-    const c_tip = -normalize(state.tip_yield_pct, 0.25) * 25;
-    const c_eur = normalize(state.eur_pct, 0.35) * 15;
-    const c_aud = normalize(state.aud_pct, 0.45) * 10;
-    const c_jpy = -normalize(state.jpy_pct, 0.50) * 10;
-    const c_chf = -normalize(state.chf_pct, 0.45) * 5;
-
-    const normalizedComposite = c_dxy + c_tip + c_eur + c_aud + c_jpy + c_chf;
-    state.comp_score = Math.max(-100, Math.min(100, parseFloat(normalizedComposite.toFixed(1))));
-
-    // Smooth composite score to eliminate front-page twitching
-    state.smoothed_score = parseFloat((0.85 * state.smoothed_score + 0.15 * state.comp_score).toFixed(1));
-
-    if (state.smoothed_score <= -25) {
-      state.signal_text = "STRONG SELL GOLD";
-      state.signal_class = "action-sell";
-    } else if (state.smoothed_score < -8) {
-      state.signal_text = "SELL GOLD";
-      state.signal_class = "action-sell";
-    } else if (state.smoothed_score >= -8 && state.smoothed_score <= 8) {
-      state.signal_text = "NEUTRAL";
-      state.signal_class = "action-neutral";
-    } else if (state.smoothed_score > 8 && state.smoothed_score < 25) {
-      state.signal_text = "BUY GOLD";
-      state.signal_class = "action-buy";
-    } else {
-      state.signal_text = "STRONG BUY GOLD";
-      state.signal_class = "action-buy";
-    }
-
-    triggerRealtimeRender();
+  function loadActiveStore() {
+    const a = state.chartAsset === 'dxy' ? 'dxy' : 'gold';
+    const s = chartStore[a];
+    candleHistory = (s.candles || []).slice();
+    storedDemandOBs = (s.demand || []).slice();
+    storedSupplyOBs = (s.supply || []).slice();
+    allCandidateDemandOBs = (s.allDemand || []).slice();
+    allCandidateSupplyOBs = (s.allSupply || []).slice();
+    multiHorizonTrendlines = (s.rays || []).slice();
   }
 
   // Update Dynamic Multi-Timeframe Bias Structure
@@ -1081,20 +989,42 @@
       sliderThumb.style.background = state.smoothed_score <= -8 ? '#ff2a44' : (state.smoothed_score >= 8 ? '#00f59b' : '#f59e0b');
     }
 
-    // Update All 6 Native Macro Rows
-    setAssetRow("row-dxy-price", "row-dxy-pct", state.dxy_price, state.dxy_pct, 3);
-    setAssetRow("row-tip-price", "row-tip-pct", state.tip_price, state.tip_yield_pct, 2);
-    setAssetRow("row-eur-price", "row-eur-pct", state.eur_price, state.eur_pct, 5);
-    setAssetRow("row-aud-price", "row-aud-pct", state.aud_price, state.aud_pct, 5);
-    setAssetRow("row-jpy-price", "row-jpy-pct", state.jpy_price, state.jpy_pct, 3);
-    setAssetRow("row-chf-price", "row-chf-pct", state.chf_price, state.chf_pct, 5);
-
     const tvSub = document.getElementById("tv-header-sub");
     if (tvSub) {
-      const sign = state.gold_change >= 0 ? '+' : '';
-      tvSub.textContent = `${state.gold_price.toFixed(3)} ${sign}`;
-      tvSub.style.color = '#00f59b';
+      if (state.chartAsset === 'dxy') {
+        const sign = state.dxy_pct >= 0 ? '+' : '';
+        tvSub.textContent = `${state.dxy_price.toFixed(3)}  ${sign}${state.dxy_pct.toFixed(2)}%`;
+        tvSub.style.color = state.dxy_pct >= 0 ? '#00f59b' : '#ff2a44';
+      } else {
+        const sign = state.gold_change >= 0 ? '+' : '';
+        tvSub.textContent = `${state.gold_price.toFixed(2)}  ${sign}${state.gold_pct.toFixed(2)}%`;
+        tvSub.style.color = state.gold_change >= 0 ? '#00f59b' : '#ff2a44';
+      }
     }
+
+    // Live 6-pair dashboard (no external iframes)
+    const setPair = (priceId, chgId, price, pct, digits) => {
+      const pEl = document.getElementById(priceId);
+      const cEl = document.getElementById(chgId);
+      if (pEl) pEl.textContent = (price != null && !isNaN(price)) ? price.toFixed(digits) : '—';
+      if (cEl) {
+        if (pct == null || isNaN(pct)) {
+          cEl.textContent = '—';
+          cEl.className = 'live-pair-chg flat';
+        } else {
+          const sign = pct >= 0 ? '+' : '';
+          cEl.textContent = `${sign}${pct.toFixed(2)}%`;
+          cEl.className = 'live-pair-chg ' + (pct > 0.01 ? 'pos' : (pct < -0.01 ? 'neg' : 'flat'));
+        }
+      }
+    };
+
+    setPair('lp-dxy', 'lp-dxy-chg', state.dxy_price, state.dxy_pct, 3);
+    setPair('lp-us10y', 'lp-us10y-chg', state.tip_price, state.tip_yield_pct, 2);
+    setPair('lp-eur', 'lp-eur-chg', state.eur_price, state.eur_pct, 5);
+    setPair('lp-aud', 'lp-aud-chg', state.aud_price, state.aud_pct, 5);
+    setPair('lp-jpy', 'lp-jpy-chg', state.jpy_price, state.jpy_pct, 3);
+    setPair('lp-chf', 'lp-chf-chg', state.chf_price, state.chf_pct, 5);
 
     updateChartBiasesLive();
   }
@@ -1120,39 +1050,278 @@
     triggerRealtimeRender();
   }
 
-  // Fetch Kline Series with Immediate Rendering
-  async function fetchRealCandles(interval) {
+  // Proportional Normalized Correlation Engine with Smoothing
+  function recalculateMetricsInstant() {
+    if (state.gold_open_session > 0) {
+      state.gold_change = state.gold_price - state.gold_open_session;
+      state.gold_pct = parseFloat(((state.gold_change / state.gold_open_session) * 100).toFixed(2));
+    }
+
+    if (state.eur_open_session > 0) {
+      state.eur_pct = parseFloat((((state.eur_price - state.eur_open_session) / state.eur_open_session) * 100).toFixed(2));
+    }
+
+    if (state.aud_open_session > 0) {
+      state.aud_pct = parseFloat((((state.aud_price - state.aud_open_session) / state.aud_open_session) * 100).toFixed(2));
+    }
+
+    if (state.jpy_open_session > 0) {
+      state.jpy_pct = parseFloat((((state.jpy_price - state.jpy_open_session) / state.jpy_open_session) * 100).toFixed(2));
+    }
+
+    if (state.chf_open_session > 0) {
+      state.chf_pct = parseFloat((((state.chf_price - state.chf_open_session) / state.chf_open_session) * 100).toFixed(2));
+    }
+
+    // Synthetic DXY only as fallback — never overwrite live biquote/feed price
+    const synthDxyPct = parseFloat(((-state.eur_pct * 0.576) + (state.jpy_pct * 0.136) + (state.chf_pct * 0.036)).toFixed(2));
+    if (!(state.dxy_price > 50 && state.dxy_price < 200)) {
+      state.dxy_pct = synthDxyPct;
+      state.dxy_price = parseFloat((state.dxy_open_session * (1 + state.dxy_pct / 100)).toFixed(3));
+    } else if (state.dxy_open_session > 0) {
+      // Keep live price; only refresh pct from open session
+      state.dxy_pct = parseFloat((((state.dxy_price - state.dxy_open_session) / state.dxy_open_session) * 100).toFixed(2));
+    }
+
+    state.tip_yield_pct = parseFloat((-state.dxy_pct * 0.40).toFixed(2));
+    state.tip_price = parseFloat((107.42 * (1 + state.tip_yield_pct / 100)).toFixed(2));
+
+    const normalize = (pct, stdVol) => Math.max(-1.0, Math.min(1.0, pct / stdVol));
+
+    const c_dxy = -normalize(state.dxy_pct, 0.35) * 35;
+    const c_tip = -normalize(state.tip_yield_pct, 0.25) * 25;
+    const c_eur = normalize(state.eur_pct, 0.35) * 15;
+    const c_aud = normalize(state.aud_pct, 0.45) * 10;
+    const c_jpy = -normalize(state.jpy_pct, 0.50) * 10;
+    const c_chf = -normalize(state.chf_pct, 0.45) * 5;
+
+    const normalizedComposite = c_dxy + c_tip + c_eur + c_aud + c_jpy + c_chf;
+    state.comp_score = Math.max(-100, Math.min(100, parseFloat(normalizedComposite.toFixed(1))));
+
+    // Smooth composite score to prevent erratic front-page jitter
+    state.smoothed_score = parseFloat((0.88 * state.smoothed_score + 0.12 * state.comp_score).toFixed(1));
+
+    if (state.smoothed_score <= -25) {
+      state.signal_text = "STRONG SELL GOLD";
+      state.signal_class = "action-sell";
+    } else if (state.smoothed_score < -8) {
+      state.signal_text = "SELL GOLD";
+      state.signal_class = "action-sell";
+    } else if (state.smoothed_score >= -8 && state.smoothed_score <= 8) {
+      state.signal_text = "NEUTRAL";
+      state.signal_class = "action-neutral";
+    } else if (state.smoothed_score > 8 && state.smoothed_score < 25) {
+      state.signal_text = "BUY GOLD";
+      state.signal_class = "action-buy";
+    } else {
+      state.signal_text = "STRONG BUY GOLD";
+      state.signal_class = "action-buy";
+    }
+
+    triggerRealtimeRender();
+  }
+
+  // Map UI TF → biquote / binance interval strings
+  function mapInterval(interval) {
+    const m = { '1m': '1m', '3m': '5m', '5m': '5m', '15m': '15m', '1h': '1h', '4h': '4h', '1d': '1d' };
+    return m[interval] || '15m';
+  }
+
+  // Normalize bars from any source into our candle format
+  function normalizeBars(bars, interval) {
+    if (!Array.isArray(bars) || bars.length === 0) return [];
+    return bars.map(b => {
+      let t = b.openTime ?? b.t ?? b.time ?? b[0];
+      if (typeof t === 'string' && /^\d+$/.test(t)) t = parseInt(t, 10);
+      if (typeof t === 'number' && t < 1e12) t = t * 1000; // seconds → ms
+      const d = new Date(t);
+      if (isNaN(d.getTime())) return null;
+      const time = (interval === '1d')
+        ? `${d.getMonth()+1}/${d.getDate()}`
+        : `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+      const o = parseFloat(b.open ?? b.o ?? b[1]);
+      const h = parseFloat(b.high ?? b.h ?? b[2]);
+      const l = parseFloat(b.low ?? b.l ?? b[3]);
+      const c = parseFloat(b.close ?? b.c ?? b[4]);
+      const v = parseFloat(b.volume ?? b.v ?? b.tickVolume ?? b[5] ?? 0);
+      if ([o, h, l, c].some(x => isNaN(x) || x <= 0)) return null;
+      return { o, h, l, c, v, quoteVol: v, time, closeTime: d.getTime() + (state.tf_seconds * 1000) };
+    }).filter(Boolean);
+  }
+
+  // Validate candle prices match the active asset (prevents Gold data on DXY chart)
+  function candlesMatchAsset(candles, asset) {
+    if (!candles || candles.length < 2) return false;
+    const sample = candles.slice(-Math.min(8, candles.length));
+    const closes = sample.map(c => c.c);
+    const highs = sample.map(c => c.h);
+    const avg = closes.reduce((a, b) => a + b, 0) / closes.length;
+    const maxH = Math.max(...highs);
+    if (asset === 'dxy') {
+      // Reject if any bar looks like gold (~1000+)
+      if (maxH > 250) return false;
+      return avg > 50 && avg < 200;
+    }
+    return avg > 500 && maxH > 500;
+  }
+
+  function applyCandleSeries(bars, interval, asset) {
+    // Only apply if this is still the active chart asset
+    if ((state.chartAsset || 'gold') !== asset) return false;
+
+    const normalized = normalizeBars(bars, interval);
+    if (!candlesMatchAsset(normalized, asset)) {
+      console.warn('Rejected series for', asset, 'count=', normalized.length, 'last=', normalized.slice(-1));
+      return false;
+    }
+    // Ensure oldest → newest
+    if (normalized.length > 1 && normalized[0].closeTime > normalized[normalized.length - 1].closeTime) {
+      normalized.reverse();
+    }
+
+    // Preserve live high/low of forming candle if same open time
+    if (candleHistory.length > 0 && normalized.length > 0 && asset === (state.chartAsset || 'gold')) {
+      const oldLast = candleHistory[candleHistory.length - 1];
+      const newLast = normalized[normalized.length - 1];
+      if (oldLast && newLast && Math.abs((oldLast.closeTime || 0) - (newLast.closeTime || 0)) < 5000) {
+        newLast.h = Math.max(newLast.h, oldLast.h, newLast.c);
+        newLast.l = Math.min(newLast.l, oldLast.l, newLast.c);
+        // Keep live close if fresher
+        const live = asset === 'dxy' ? state.dxy_price : state.gold_price;
+        if (live > 0) {
+          newLast.c = live;
+          newLast.h = Math.max(newLast.h, live);
+          newLast.l = Math.min(newLast.l, live);
+        }
+      }
+    }
+
+    candleHistory = normalized;
+    allCandidateDemandOBs = [];
+    allCandidateSupplyOBs = [];
+    storedDemandOBs = [];
+    storedSupplyOBs = [];
+    multiHorizonTrendlines = [];
+
+    const last = candleHistory[candleHistory.length - 1];
+    if (last) {
+      if (asset === 'dxy') state.dxy_price = last.c;
+      else state.gold_price = last.c;
+      state.timer = Math.max(1, Math.floor((last.closeTime - Date.now()) / 1000));
+    }
+    scanAndStoreOrderBlocks(candleHistory);
+    executeTradingViewRayArchitecture(candleHistory);
+    saveActiveStore();
+    triggerRealtimeRender();
+    return true;
+  }
+
+  async function fetchJson(url, opts) {
+    const res = await fetch(url, opts);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  }
+
+  // Yahoo Finance interval map
+  function yahooInterval(interval) {
+    const m = { '1m': '1m', '3m': '5m', '5m': '5m', '15m': '15m', '1h': '60m', '4h': '60m', '1d': '1d' };
+    return m[interval] || '15m';
+  }
+  function yahooRange(interval) {
+    const m = { '1m': '1d', '3m': '5d', '5m': '5d', '15m': '5d', '1h': '1mo', '4h': '3mo', '1d': '6mo' };
+    return m[interval] || '5d';
+  }
+
+  // Parse Yahoo chart result into our bar objects
+  function barsFromYahoo(data) {
+    try {
+      const r = data.chart.result[0];
+      const ts = r.timestamp || [];
+      const q = r.indicators.quote[0];
+      const bars = [];
+      for (let i = 0; i < ts.length; i++) {
+        if (q.close[i] == null || q.open[i] == null) continue;
+        bars.push({
+          openTime: ts[i] * 1000,
+          open: q.open[i], high: q.high[i], low: q.low[i], close: q.close[i],
+          volume: q.volume ? q.volume[i] : 0
+        });
+      }
+      return bars;
+    } catch (_) { return []; }
+  }
+
+  // Fetch Kline Series — multi-source for reliability
+  // forceClear=true only when switching asset/TF (shows loading). Soft refresh keeps chart visible.
+  async function fetchRealCandles(interval, forceClear) {
+    const asset = state.chartAsset || 'gold';
+    const bqInterval = mapInterval(interval);
+    if (isFetchingCandles && !forceClear) return;
+    isFetchingCandles = true;
+
+    // Only clear UI if we have nothing yet (avoid flash on soft refresh)
+    if (forceClear && candleHistory.length === 0) {
+      triggerRealtimeRender();
+    }
+
+    try {
+    if (asset === 'dxy') {
+      // --- DXY sources (try in order) ---
+      // 1) biquote direct
+      try {
+        const data = await fetchJson(`https://biquote.io/api/DXY/ohlc?interval=${bqInterval}&limit=150`);
+        let bars = (data && data.bars) ? data.bars.slice() : [];
+        if (bars.length > 1 && new Date(bars[0].openTime) > new Date(bars[bars.length - 1].openTime)) bars.reverse();
+        if (applyCandleSeries(bars, interval, 'dxy')) { isFetchingCandles = false; return; }
+      } catch (e) { console.warn('biquote DXY fail', e); }
+
+      // 2) biquote 15m fallback
+      try {
+        const data = await fetchJson(`https://biquote.io/api/DXY/ohlc?interval=15m&limit=150`);
+        let bars = (data && data.bars) ? data.bars.slice() : [];
+        if (bars.length > 1 && new Date(bars[0].openTime) > new Date(bars[bars.length - 1].openTime)) bars.reverse();
+        if (applyCandleSeries(bars, interval, 'dxy')) { isFetchingCandles = false; return; }
+      } catch (e) { console.warn('biquote DXY 15m fail', e); }
+
+      // 3) Yahoo DX-Y.NYB via corsproxy
+      try {
+        const yInt = yahooInterval(interval);
+        const yRange = yahooRange(interval);
+        const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?interval=${yInt}&range=${yRange}`;
+        const proxied = `https://corsproxy.io/?${encodeURIComponent(yUrl)}`;
+        const data = await fetchJson(proxied, { headers: { 'Accept': 'application/json' } });
+        const bars = barsFromYahoo(data);
+        if (applyCandleSeries(bars, interval, 'dxy')) { isFetchingCandles = false; return; }
+      } catch (e) { console.warn('Yahoo DXY fail', e); }
+
+      // Keep existing candles if fetch failed — never blank the chart
+      isFetchingCandles = false;
+      return;
+    }
+
+    // --- GOLD ---
     try {
       const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval=${interval}&limit=300`);
       const raw = await res.json();
-      if (Array.isArray(raw)) {
-        candleHistory = raw.map(k => {
-          const d = new Date(k[0]);
-          const time = (interval === '1d') 
-            ? `${d.getMonth()+1}/${d.getDate()}`
-            : `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-          return {
-            o: parseFloat(k[1]),
-            h: parseFloat(k[2]),
-            l: parseFloat(k[3]),
-            c: parseFloat(k[4]),
-            v: parseFloat(k[5]),
-            quoteVol: parseFloat(k[7]),
-            time: time,
-            closeTime: k[6]
-          };
-        });
-
-        const lastBar = candleHistory[candleHistory.length - 1];
-        if (lastBar && lastBar.closeTime) {
-          state.timer = Math.max(1, Math.floor((lastBar.closeTime - Date.now()) / 1000));
-        }
-
-        scanAndStoreOrderBlocks(candleHistory);
-        executeTradingViewRayArchitecture(candleHistory);
-        triggerRealtimeRender();
+      if (Array.isArray(raw) && raw.length > 10) {
+        const bars = raw.map(k => ({
+          openTime: k[0], open: k[1], high: k[2], low: k[3], close: k[4], volume: k[5], tickVolume: k[7]
+        }));
+        if (applyCandleSeries(bars, interval, 'gold')) { isFetchingCandles = false; return; }
       }
-    } catch (e) {}
+    } catch (_) {}
+
+    try {
+      const data2 = await fetchJson(`https://biquote.io/api/XAUUSD/ohlc?interval=${bqInterval}&limit=150`);
+      let bars2 = (data2 && data2.bars) ? data2.bars.slice() : [];
+      if (bars2.length > 1 && new Date(bars2[0].openTime) > new Date(bars2[bars2.length - 1].openTime)) bars2.reverse();
+      applyCandleSeries(bars2, interval, 'gold');
+    } catch (e) {
+      console.warn('Gold candle fetch error', e);
+    }
+    } finally {
+      isFetchingCandles = false;
+    }
   }
 
   function mergeOverlappingZones(zones) {
@@ -1203,8 +1372,9 @@
       if (crossCount >= 2) return false;
     }
 
-    if (isDemand && state.gold_price < ob.bottom) return false;
-    if (!isDemand && state.gold_price > ob.top) return false;
+    const livePx = (state.chartAsset === 'dxy') ? state.dxy_price : state.gold_price;
+    if (isDemand && livePx < ob.bottom) return false;
+    if (!isDemand && livePx > ob.top) return false;
 
     return true;
   }
@@ -1345,7 +1515,7 @@
           if (Math.abs(candle.h - lineY) <= 0.5 * atr && candle.c <= lineY) touches.push({ i: k, p: candle.h });
         } else {
           if (candle.c < lineY - 0.30 * atr) { breakIndex = k; break; }
-          if (Math.abs(candle.h - lineY) <= 0.5 * atr && candle.c >= lineY) touches.push({ i: k, p: candle.l });
+          if (Math.abs(candle.l - lineY) <= 0.5 * atr && candle.c >= lineY) touches.push({ i: k, p: candle.l });
         }
       }
 
@@ -1404,7 +1574,36 @@
   // Canvas Drawing Engine (Double-Buffer Native 60fps)
   function drawTradingViewChart() {
     const canvas = document.getElementById("tvCanvas");
-    if (!canvas || !canvas.parentElement || candleHistory.length === 0) return;
+    if (!canvas || !canvas.parentElement) return;
+
+    // Empty / loading state
+    if (candleHistory.length === 0 || !candlesMatchAsset(candleHistory, state.chartAsset || 'gold')) {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const tw = Math.round(rect.width * dpr);
+      const th = Math.round(rect.height * dpr);
+      if (canvas.width !== tw || canvas.height !== th) {
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        canvas.width = tw;
+        canvas.height = th;
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.fillStyle = '#080a0f';
+      ctx.fillRect(0, 0, rect.width, rect.height);
+      ctx.fillStyle = '#8e95a5';
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(
+        state.chartAsset === 'dxy' ? 'Loading DXY live candles…' : 'Loading Gold candles…',
+        rect.width / 2,
+        rect.height / 2
+      );
+      ctx.restore();
+      return;
+    }
 
     const rect = canvas.parentElement.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
@@ -1458,29 +1657,64 @@
       });
     }
 
-    const padBuffer = (maxP - minP) * 0.15 || 4.0;
+    // Include live price only if it matches this asset's scale
+    const livePx = (state.chartAsset === 'dxy') ? state.dxy_price : state.gold_price;
+    if (state.chartAsset === 'dxy') {
+      if (livePx > 50 && livePx < 200) {
+        minP = Math.min(minP, livePx);
+        maxP = Math.max(maxP, livePx);
+      }
+      // Hard clamp: never allow gold-scale on DXY
+      if (maxP > 250 || minP < 50) {
+        minP = Math.min(livePx, 100.5) - 0.15;
+        maxP = Math.max(livePx, 100.5) + 0.15;
+      }
+    } else if (livePx > 500) {
+      minP = Math.min(minP, livePx);
+      maxP = Math.max(maxP, livePx);
+    }
+
+    const padBuffer = Math.max((maxP - minP) * 0.15, state.chartAsset === 'dxy' ? 0.03 : 2.0);
     minP -= padBuffer;
     maxP += padBuffer;
-    const range = maxP - minP;
+    const range = Math.max(maxP - minP, state.chartAsset === 'dxy' ? 0.05 : 1);
 
     const getY = (p) => topPad + chartH - ((p - minP) / range) * chartH;
 
-    // Gridlines & Scale
+    // Gridlines & Scale (adaptive for Gold ~4000 and DXY ~100)
     ctx.strokeStyle = "#161922";
     ctx.lineWidth = 1;
     ctx.fillStyle = "#656a76";
     ctx.font = `${w > 768 ? 11 : 10}px sans-serif`;
     ctx.textAlign = "left";
 
-    const stepSize = Math.max(2, Math.round(range / 8));
+    function niceStep(raw) {
+      if (raw <= 0 || !isFinite(raw)) return 0.05;
+      const exp = Math.floor(Math.log10(raw));
+      const base = Math.pow(10, exp);
+      const n = raw / base;
+      let nice;
+      if (n <= 1) nice = 1;
+      else if (n <= 2) nice = 2;
+      else if (n <= 5) nice = 5;
+      else nice = 10;
+      return nice * base;
+    }
+
+    const targetLines = 8;
+    const stepSize = niceStep(range / targetLines);
+    const decimals = stepSize >= 1 ? 2 : (stepSize >= 0.1 ? 2 : (stepSize >= 0.01 ? 3 : 4));
     const startStep = Math.floor(minP / stepSize) * stepSize;
-    for (let p = startStep; p <= maxP; p += stepSize) {
+
+    for (let p = startStep; p <= maxP + stepSize * 0.01; p += stepSize) {
+      if (p < minP - stepSize * 0.01) continue;
       const y = Math.round(getY(p)) + 0.5;
+      if (y < topPad - 2 || y > topPad + chartH + 2) continue;
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(chartW, y);
       ctx.stroke();
-      ctx.fillText(p.toFixed(2), chartW + 6, y + 4);
+      ctx.fillText(p.toFixed(decimals), chartW + 6, y + 4);
     }
 
     // Active Order Blocks
@@ -1551,25 +1785,28 @@
       ctx.lineTo(x2, y2);
       ctx.stroke();
 
-      l.touches.forEach(tp => {
-        const tx = getX(tp.i);
-        const ty = getY(tp.p);
-        if (tx >= 0 && tx <= chartW) {
-          ctx.fillStyle = lineColor;
-          ctx.beginPath();
-          if (l.type === "res") {
-            ctx.moveTo(tx, ty - 2);
-            ctx.lineTo(tx - 4, ty - 8);
-            ctx.lineTo(tx + 4, ty - 8);
-          } else {
-            ctx.moveTo(tx, ty + 2);
-            ctx.lineTo(tx - 4, ty + 8);
-            ctx.lineTo(tx + 4, ty + 8);
+      // Touch arrows only on Gold chart (hidden on DXY as requested)
+      if (state.chartAsset !== 'dxy') {
+        l.touches.forEach(tp => {
+          const tx = getX(tp.i);
+          const ty = getY(tp.p);
+          if (tx >= 0 && tx <= chartW) {
+            ctx.fillStyle = lineColor;
+            ctx.beginPath();
+            if (l.type === "res") {
+              ctx.moveTo(tx, ty - 2);
+              ctx.lineTo(tx - 4, ty - 8);
+              ctx.lineTo(tx + 4, ty - 8);
+            } else {
+              ctx.moveTo(tx, ty + 2);
+              ctx.lineTo(tx - 4, ty + 8);
+              ctx.lineTo(tx + 4, ty + 8);
+            }
+            ctx.closePath();
+            ctx.fill();
           }
-          ctx.closePath();
-          ctx.fill();
-        }
-      });
+        });
+      }
 
       const futureX = chartW;
       const futureY = y2 + slope * (futureX - x2);
@@ -1616,8 +1853,10 @@
       }
     }
 
-    // High-Contrast White Moving Price Badge
-    const liveY = Math.round(getY(state.gold_price)) + 0.5;
+    // High-Contrast White Moving Price Badge (Gold or DXY)
+    const badgePx = (state.chartAsset === 'dxy') ? state.dxy_price : state.gold_price;
+    const liveDigits = (state.chartAsset === 'dxy') ? 3 : 2;
+    const liveY = Math.round(getY(badgePx)) + 0.5;
 
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 1.2;
@@ -1642,7 +1881,7 @@
     ctx.fillStyle = "#000000";
     ctx.font = "bold 11px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(state.gold_price.toFixed(2), badgeX + (badgeW / 2), liveY - 1);
+    ctx.fillText(badgePx.toFixed(liveDigits), badgeX + (badgeW / 2), liveY - 1);
     
     const mins = Math.floor(state.timer / 60).toString().padStart(2, '0');
     const secs = (state.timer % 60).toString().padStart(2, '0');
@@ -1723,72 +1962,105 @@
   function changeTimeframe(tf, seconds, btn) {
     state.tf_interval = tf;
     state.tf_seconds = seconds;
+    // Clear only active series (keep other asset's store intact)
+    candleHistory = [];
     allCandidateDemandOBs = [];
     allCandidateSupplyOBs = [];
     storedSupplyOBs = [];
     storedDemandOBs = [];
     multiHorizonTrendlines = [];
+    saveActiveStore();
+    view.zoom = 1.0;
+    view.offsetX = 0;
     document.querySelectorAll(".tv-tf").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
-    fetchRealCandles(tf);
+    fetchRealCandles(tf, true);
   }
 
-  // Live Countdown Loop
+  // Roll a new candle locally so the chart never blanks on timer expiry
+  function rollLocalCandle() {
+    if (candleHistory.length === 0) return;
+    const asset = state.chartAsset || 'gold';
+    const live = asset === 'dxy' ? state.dxy_price : state.gold_price;
+    if (!live || live <= 0) return;
+    if (asset === 'dxy' && (live < 50 || live > 200)) return;
+    if (asset === 'gold' && live < 500) return;
+
+    const last = candleHistory[candleHistory.length - 1];
+    last.c = live;
+    last.h = Math.max(last.h, live);
+    last.l = Math.min(last.l, live);
+
+    const stepMs = (state.tf_seconds || 60) * 1000;
+    const d = new Date();
+    const timeStr = state.tf_interval === '1d'
+      ? `${d.getMonth()+1}/${d.getDate()}`
+      : `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+
+    candleHistory.push({
+      o: live, h: live, l: live, c: live, v: 0, quoteVol: 0,
+      time: timeStr,
+      closeTime: Date.now() + stepMs
+    });
+    if (candleHistory.length > 400) candleHistory = candleHistory.slice(-350);
+    state.timer = state.tf_seconds || 60;
+    saveActiveStore();
+  }
+
+  // Live Countdown Loop — chart stays continuous
   setInterval(() => {
     if (state.timer > 1) {
       state.timer--;
     } else {
-      fetchRealCandles(state.tf_interval);
+      rollLocalCandle();                 // keep drawing
+      fetchRealCandles(state.tf_interval, false); // background soft update
+    }
+    if (state.chartAsset === 'dxy' && candleHistory.length > 0) {
+      const maxH = Math.max(...candleHistory.slice(-5).map(c => c.h || 0));
+      if (maxH > 500) {
+        loadActiveStore();
+        if (!candlesMatchAsset(candleHistory, 'dxy')) {
+          candleHistory = [];
+          fetchRealCandles(state.tf_interval, true);
+        }
+      }
     }
     triggerRealtimeRender();
   }, 1000);
 
-  function openChartModal() {
+  function openChartModal(asset) {
+    // Save current asset before switching
+    saveActiveStore();
+    state.chartAsset = asset === 'dxy' ? 'dxy' : 'gold';
+    loadActiveStore();
+    view.zoom = 1.0;
+    view.offsetX = 0;
+
+    const label = document.getElementById('tv-asset-label');
+    const dot = document.getElementById('tv-asset-dot');
+    if (state.chartAsset === 'dxy') {
+      if (label) label.textContent = 'US Dollar Index (DXY) • Live Strategy Chart';
+      if (dot) { dot.textContent = 'D'; dot.style.background = '#3b82f6'; }
+    } else {
+      if (label) label.textContent = 'CFDs on Gold (US$ / OZ) • 300 Candles';
+      if (dot) { dot.textContent = 'G'; dot.style.background = '#f59e0b'; }
+    }
+
     document.getElementById("chartModal").style.display = "flex";
-    setTimeout(() => {
-      fetchRealCandles(state.tf_interval);
-    }, 30);
+    // If we already have this asset's candles, draw immediately (no blank)
+    if (candleHistory.length > 0 && candlesMatchAsset(candleHistory, state.chartAsset)) {
+      triggerRealtimeRender();
+      fetchRealCandles(state.tf_interval, false); // soft background refresh
+    } else {
+      setTimeout(() => fetchRealCandles(state.tf_interval, true), 40);
+    }
   }
 
   function closeChartModal() {
     document.getElementById("chartModal").style.display = "none";
   }
 
-  // DXY Advanced TradingView Modal Engine
-  let dxyWidgetLoaded = false;
-  function openDxyModal() {
-    document.getElementById("dxyModal").style.display = "flex";
-    if (!dxyWidgetLoaded) {
-      const container = document.getElementById("tv_dxy_advanced_container");
-      container.innerHTML = "";
-      
-      const script = document.createElement("script");
-      script.type = "text/javascript";
-      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-      script.async = true;
-      script.innerHTML = JSON.stringify({
-        "autosize": true,
-        "symbol": "CAPITALCOM:DXY",
-        "interval": "15",
-        "timezone": "Etc/UTC",
-        "theme": "dark",
-        "style": "1",
-        "locale": "en",
-        "enable_publishing": false,
-        "allow_symbol_change": true,
-        "calendar": false,
-        "support_host": "https://www.tradingview.com"
-      });
-      container.appendChild(script);
-      dxyWidgetLoaded = true;
-    }
-  }
-
-  function closeDxyModal() {
-    document.getElementById("dxyModal").style.display = "none";
-  }
-
-  // Real-Time High-Speed WebSocket Engine (Gold & Direct Currencies)
+  // Real-Time High-Speed WebSocket Engine (Gold & Interbank Forex)
   let wsInstance = null;
 
   function initLiveSocket() {
@@ -1812,11 +2084,12 @@
           const newP = parseFloat(data.c || data.p);
           if (!isNaN(newP)) {
             state.gold_price = newP;
-            if (candleHistory.length > 0) {
+            // Only update live candle when GOLD chart is open (never corrupt DXY candles)
+            if (state.chartAsset === 'gold' && candleHistory.length > 0) {
               const cur = candleHistory[candleHistory.length - 1];
-              cur.c = state.gold_price;
-              if (state.gold_price > cur.h) cur.h = state.gold_price;
-              if (state.gold_price < cur.l) cur.l = state.gold_price;
+              cur.c = newP;
+              if (newP > cur.h) cur.h = newP;
+              if (newP < cur.l) cur.l = newP;
             }
             recalculateMetricsInstant();
           }
@@ -1826,6 +2099,12 @@
           const tradePrice = parseFloat(data.p);
           if (!isNaN(tradePrice)) {
             state.gold_price = tradePrice;
+            if (state.chartAsset === 'gold' && candleHistory.length > 0) {
+              const cur = candleHistory[candleHistory.length - 1];
+              cur.c = tradePrice;
+              if (tradePrice > cur.h) cur.h = tradePrice;
+              if (tradePrice < cur.l) cur.l = tradePrice;
+            }
             recalculateMetricsInstant();
           }
         }
@@ -1848,7 +2127,7 @@
     wsInstance.onclose = () => { setTimeout(initLiveSocket, 1500); };
   }
 
-  // Active Multi-Pair Real-Time Poller for Direct Scoring Sync
+  // Active Multi-Pair Real-Time Poller
   async function pollRealForexLive() {
     try {
       const res = await fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR,AUD,JPY,CHF');
@@ -1859,9 +2138,30 @@
         if (r.AUD) state.aud_price = parseFloat((1 / r.AUD).toFixed(5));
         if (r.JPY) state.jpy_price = parseFloat(r.JPY.toFixed(3));
         if (r.CHF) state.chf_price = parseFloat(r.CHF.toFixed(5));
-        recalculateMetricsInstant();
       }
     } catch(e) {}
+
+    // Live DXY from free biquote feed
+    try {
+      const dxyRes = await fetch('https://biquote.io/api/DXY');
+      const dxy = await dxyRes.json();
+      if (dxy && (dxy.bid || dxy.last || dxy.ask)) {
+        const px = parseFloat(dxy.bid || dxy.last || dxy.ask);
+        if (!isNaN(px) && px > 50) {
+          state.dxy_price = px;
+          if (dxy.dayDiffPercent != null) state.dxy_pct = parseFloat(dxy.dayDiffPercent);
+          // Live-build the current (forming) candle on DXY chart
+          if (state.chartAsset === 'dxy' && candleHistory.length > 0 && candlesMatchAsset(candleHistory, 'dxy')) {
+            const cur = candleHistory[candleHistory.length - 1];
+            cur.c = px;
+            if (px > cur.h) cur.h = px;
+            if (px < cur.l) cur.l = px;
+          }
+        }
+      }
+    } catch(e) {}
+
+    recalculateMetricsInstant();
   }
 
   function emergencyRefresh() {
@@ -1878,7 +2178,7 @@
     pollRealForexLive();
     initLiveSocket();
     fetchRealCandles(state.tf_interval);
-    setInterval(pollRealForexLive, 3000);
+    setInterval(pollRealForexLive, 1500);
   }
 
   initApp();
