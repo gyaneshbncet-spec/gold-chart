@@ -191,6 +191,19 @@
     .signal-card { background: #131722; border: 1px solid #1f2430; border-radius: 14px; padding: 14px; text-align: center; margin-bottom: 14px; }
     .comp-title { font-size: 12px; color: #787b86; font-weight: 500; }
     .comp-action { font-size: 24px; font-weight: 800; margin: 6px 0 10px 0; }
+    .comp-chart-wrap {
+      margin-top: 12px; border-radius: 10px; overflow: hidden;
+      background: #0b0e14; border: 1px solid #1a1f2a; height: 140px; position: relative;
+    }
+    .comp-chart-wrap canvas { width: 100%; height: 100%; display: block; }
+    .comp-chart-label {
+      position: absolute; top: 6px; left: 10px; font-size: 10px; color: #5f6368;
+      font-weight: 600; letter-spacing: 0.3px; pointer-events: none;
+    }
+    .comp-chart-value {
+      position: absolute; top: 6px; right: 10px; font-size: 11px; font-weight: 700;
+      pointer-events: none;
+    }
     .action-sell { color: #ff2a44; }
     .action-buy { color: #00f59b; }
     .action-neutral { color: #f59e0b; }
@@ -496,6 +509,12 @@
       <span>Neutral</span>
       <span>Buy Gold</span>
     </div>
+    <!-- Live Composite Score Chart -->
+    <div class="comp-chart-wrap">
+      <div class="comp-chart-label">COMPOSITE SCORE · LIVE</div>
+      <div class="comp-chart-value" id="comp-chart-val">0.0</div>
+      <canvas id="compScoreCanvas"></canvas>
+    </div>
   </div>
 
   <div style="display:flex; gap:10px; margin-bottom:14px;">
@@ -571,14 +590,14 @@
       <div class="live-pair-main">
         <div class="live-pair-left">
           <span class="live-pair-name">US10Y</span>
-          <span class="live-pair-desc">10Y Treasury Yield (proxy)</span>
+          <span class="live-pair-desc">10Y T-Note Price (USB10YUSD / ZN)</span>
         </div>
         <div class="live-pair-right">
           <span class="live-pair-price" id="lp-us10y">—</span>
           <span class="live-pair-chg" id="lp-us10y-chg">—</span>
         </div>
       </div>
-      <span class="weight-subtitle">25% weight - Very High - TIP price, Inverse flipped</span>
+      <span class="weight-subtitle">25% weight — Bond price up = yields down = gold support</span>
     </div>
 
     <!-- ROW 3: EURUSD -->
@@ -816,35 +835,37 @@
     setTimeout(unlockApp, 150);
   }
 
-  // Real-World Calibrated Market State
+  // Live market state — values overwritten by real feeds on poll
   const state = {
-    gold_price: 4268.50,
-    eur_price: 1.13780,
-    aud_price: 0.70266,
-    jpy_price: 158.809,
-    chf_price: 0.82710,
-    dxy_price: 101.180,
-    tip_price: 107.42,
+    gold_price: 0,
+    eur_price: 0,
+    aud_price: 0,
+    jpy_price: 0,
+    chf_price: 0,
+    dxy_price: 0,
+    tip_price: 0,
+    tip_yield_pts: 0,
 
-    gold_open_session: 4278.80,
-    eur_open_session: 1.13815,
-    aud_open_session: 0.70340,
-    jpy_open_session: 158.275,
-    chf_open_session: 0.82560,
-    dxy_open_session: 101.100,
+    gold_open_session: 0,
+    eur_open_session: 0,
+    aud_open_session: 0,
+    jpy_open_session: 0,
+    chf_open_session: 0,
+    dxy_open_session: 0,
+    _fxOpensSet: false,
 
-    gold_change: -10.30,
-    gold_pct: -0.24,
-    dxy_pct: 0.08,
-    tip_yield_pct: -0.03,
-    eur_pct: -0.03,
-    aud_pct: -0.10,
-    jpy_pct: 0.34,
-    chf_pct: 0.18,
-    comp_score: -19.4,
-    smoothed_score: -19.4,
-    signal_text: 'SELL GOLD',
-    signal_class: 'action-sell',
+    gold_change: 0,
+    gold_pct: 0,
+    dxy_pct: 0,
+    tip_yield_pct: 0,
+    eur_pct: 0,
+    aud_pct: 0,
+    jpy_pct: 0,
+    chf_pct: 0,
+    comp_score: 0,
+    smoothed_score: 0,
+    signal_text: 'LOADING…',
+    signal_class: 'action-neutral',
     tf_interval: '15m',
     tf_seconds: 900,
     timer: 788,
@@ -965,12 +986,130 @@
     }
   }
 
+  // Front-page live composite score line chart
+  function drawCompScoreChart() {
+    const canvas = document.getElementById('compScoreCanvas');
+    if (!canvas || !canvas.parentElement) return;
+    const hist = window._compHistory || [];
+    const rect = canvas.parentElement.getBoundingClientRect();
+    if (rect.width < 10 || rect.height < 10) return;
+    const dpr = window.devicePixelRatio || 1;
+    const w = Math.round(rect.width * dpr);
+    const h = Math.round(rect.height * dpr);
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = rect.height + 'px';
+      canvas.width = w;
+      canvas.height = h;
+    }
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.save();
+    ctx.scale(dpr, dpr);
+    const cw = rect.width;
+    const ch = rect.height;
+    const padL = 28, padR = 8, padT = 22, padB = 6;
+    const plotW = cw - padL - padR;
+    const plotH = ch - padT - padB;
+
+    // Background
+    ctx.fillStyle = '#0b0e14';
+    ctx.fillRect(0, 0, cw, ch);
+
+    // Zero line + guide levels
+    const yAt = (v) => padT + plotH * (1 - (v + 100) / 200); // -100 → bottom, +100 → top
+    ctx.strokeStyle = '#1a1f2a';
+    ctx.lineWidth = 1;
+    [-50, 0, 50].forEach(lvl => {
+      const y = yAt(lvl);
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(cw - padR, y);
+      ctx.stroke();
+    });
+    // Strong zero
+    ctx.strokeStyle = '#2a3140';
+    ctx.beginPath();
+    ctx.moveTo(padL, yAt(0));
+    ctx.lineTo(cw - padR, yAt(0));
+    ctx.stroke();
+
+    // Scale labels
+    ctx.fillStyle = '#4a5060';
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'right';
+    [100, 50, 0, -50, -100].forEach(lvl => {
+      ctx.fillText(String(lvl), padL - 4, yAt(lvl) + 3);
+    });
+
+    const valEl = document.getElementById('comp-chart-val');
+    const latest = hist.length ? hist[hist.length - 1].v : state.smoothed_score;
+    if (valEl) {
+      const sign = latest >= 0 ? '+' : '';
+      valEl.textContent = sign + Number(latest).toFixed(1);
+      valEl.style.color = latest <= -8 ? '#ff2a44' : (latest >= 8 ? '#00f59b' : '#f59e0b');
+    }
+
+    if (hist.length < 2) {
+      ctx.restore();
+      return;
+    }
+
+    // Gradient fill under line
+    const xAt = (i) => padL + (i / (hist.length - 1)) * plotW;
+    ctx.beginPath();
+    hist.forEach((pt, i) => {
+      const x = xAt(i), y = yAt(pt.v);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    // Close to bottom for fill
+    ctx.lineTo(xAt(hist.length - 1), padT + plotH);
+    ctx.lineTo(xAt(0), padT + plotH);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+    const col = latest <= -8 ? '255,42,68' : (latest >= 8 ? '0,245,155' : '245,158,11');
+    grad.addColorStop(0, `rgba(${col},0.22)`);
+    grad.addColorStop(1, `rgba(${col},0.02)`);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    hist.forEach((pt, i) => {
+      const x = xAt(i), y = yAt(pt.v);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = latest <= -8 ? '#ff2a44' : (latest >= 8 ? '#00f59b' : '#f59e0b');
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    // Live dot
+    const lastX = xAt(hist.length - 1);
+    const lastY = yAt(latest);
+    ctx.beginPath();
+    ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = latest <= -8 ? '#ff2a44' : (latest >= 8 ? '#00f59b' : '#f59e0b');
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(lastX, lastY, 7, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${col},0.25)`;
+    ctx.fill();
+
+    ctx.restore();
+  }
+
   // Direct Synchronous DOM Updater
   function renderFrontPageDirect() {
     const goldSpotEl = document.getElementById("gold-spot");
     if (goldSpotEl) {
-      const sign = state.gold_change >= 0 ? '+' : '';
-      goldSpotEl.textContent = `Gold spot: $${state.gold_price.toFixed(2)} (${sign}${state.gold_change.toFixed(2)} / ${sign}${state.gold_pct.toFixed(2)}% today)`;
+      if (state.gold_price > 500) {
+        const sign = state.gold_change >= 0 ? '+' : '';
+        goldSpotEl.textContent = `Gold spot: $${state.gold_price.toFixed(2)} (${sign}${state.gold_change.toFixed(2)} / ${sign}${state.gold_pct.toFixed(2)}% today)`;
+      } else {
+        goldSpotEl.textContent = 'Gold spot: Syncing real-time feed…';
+      }
     }
 
     const compScoreEl = document.getElementById("comp-score");
@@ -988,6 +1127,9 @@
       sliderThumb.style.left = `${leftPos}%`;
       sliderThumb.style.background = state.smoothed_score <= -8 ? '#ff2a44' : (state.smoothed_score >= 8 ? '#00f59b' : '#f59e0b');
     }
+
+    // Live composite score mini-chart
+    drawCompScoreChart();
 
     const tvSub = document.getElementById("tv-header-sub");
     if (tvSub) {
@@ -1020,7 +1162,8 @@
     };
 
     setPair('lp-dxy', 'lp-dxy-chg', state.dxy_price, state.dxy_pct, 3);
-    setPair('lp-us10y', 'lp-us10y-chg', state.tip_price, state.tip_yield_pct, 2);
+    // US10Y = T-Note PRICE (like TV USB10YUSD ~104.x), day % from prior close
+    setPair('lp-us10y', 'lp-us10y-chg', state.tip_price > 50 ? state.tip_price : null, state._feed_tip_yield_pct ? state.tip_yield_pct : null, 3);
     setPair('lp-eur', 'lp-eur-chg', state.eur_price, state.eur_pct, 5);
     setPair('lp-aud', 'lp-aud-chg', state.aud_price, state.aud_pct, 5);
     setPair('lp-jpy', 'lp-jpy-chg', state.jpy_price, state.jpy_pct, 3);
@@ -1052,44 +1195,55 @@
 
   // Proportional Normalized Correlation Engine with Smoothing
   function recalculateMetricsInstant() {
-    if (state.gold_open_session > 0) {
-      state.gold_change = state.gold_price - state.gold_open_session;
-      state.gold_pct = parseFloat(((state.gold_change / state.gold_open_session) * 100).toFixed(2));
+    // Gold daily % is set from live feed (biquote dayDiffPercent) in pollRealForexLive.
+    // Only recompute from open if feed did not supply a day % this cycle.
+    if (state.gold_open_session > 500 && state.gold_price > 500) {
+      state.gold_change = parseFloat((state.gold_price - state.gold_open_session).toFixed(2));
+      // Keep feed pct if present; otherwise derive
+      if (state.gold_pct == null || isNaN(state.gold_pct)) {
+        state.gold_pct = parseFloat(((state.gold_change / state.gold_open_session) * 100).toFixed(2));
+      } else {
+        // Keep $ change aligned with price vs open
+        state.gold_change = parseFloat((state.gold_price - state.gold_open_session).toFixed(2));
+      }
     }
 
-    if (state.eur_open_session > 0) {
+    // Only derive pair % from open if feed did NOT supply dayDiffPercent
+    if (!state._feed_eur_pct && state.eur_open_session > 0 && state.eur_price > 0) {
       state.eur_pct = parseFloat((((state.eur_price - state.eur_open_session) / state.eur_open_session) * 100).toFixed(2));
     }
-
-    if (state.aud_open_session > 0) {
+    if (!state._feed_aud_pct && state.aud_open_session > 0 && state.aud_price > 0) {
       state.aud_pct = parseFloat((((state.aud_price - state.aud_open_session) / state.aud_open_session) * 100).toFixed(2));
     }
-
-    if (state.jpy_open_session > 0) {
+    if (!state._feed_jpy_pct && state.jpy_open_session > 0 && state.jpy_price > 0) {
       state.jpy_pct = parseFloat((((state.jpy_price - state.jpy_open_session) / state.jpy_open_session) * 100).toFixed(2));
     }
-
-    if (state.chf_open_session > 0) {
+    if (!state._feed_chf_pct && state.chf_open_session > 0 && state.chf_price > 0) {
       state.chf_pct = parseFloat((((state.chf_price - state.chf_open_session) / state.chf_open_session) * 100).toFixed(2));
     }
 
-    // Synthetic DXY only as fallback — never overwrite live biquote/feed price
-    const synthDxyPct = parseFloat(((-state.eur_pct * 0.576) + (state.jpy_pct * 0.136) + (state.chf_pct * 0.036)).toFixed(2));
+    // DXY: keep feed %; synthetic only if no live DXY at all
     if (!(state.dxy_price > 50 && state.dxy_price < 200)) {
+      const synthDxyPct = parseFloat(((-state.eur_pct * 0.576) + (state.jpy_pct * 0.136) + (state.chf_pct * 0.036)).toFixed(2));
       state.dxy_pct = synthDxyPct;
-      state.dxy_price = parseFloat((state.dxy_open_session * (1 + state.dxy_pct / 100)).toFixed(3));
-    } else if (state.dxy_open_session > 0) {
-      // Keep live price; only refresh pct from open session
+      if (state.dxy_open_session > 0) {
+        state.dxy_price = parseFloat((state.dxy_open_session * (1 + state.dxy_pct / 100)).toFixed(3));
+      }
+    } else if (!state._feed_dxy_pct && state.dxy_open_session > 0) {
       state.dxy_pct = parseFloat((((state.dxy_price - state.dxy_open_session) / state.dxy_open_session) * 100).toFixed(2));
     }
 
-    state.tip_yield_pct = parseFloat((-state.dxy_pct * 0.40).toFixed(2));
-    state.tip_price = parseFloat((107.42 * (1 + state.tip_yield_pct / 100)).toFixed(2));
+    // US10Y: keep real yield from Yahoo; never invent from DXY
+    // tip_price = yield level, tip_yield_pct = day change %
+    if (!state._feed_tip_yield_pct) {
+      // leave last known; do not fabricate
+    }
 
     const normalize = (pct, stdVol) => Math.max(-1.0, Math.min(1.0, pct / stdVol));
 
+    // tip = T-Note PRICE day % (price UP → yields DOWN → gold bullish → positive weight)
     const c_dxy = -normalize(state.dxy_pct, 0.35) * 35;
-    const c_tip = -normalize(state.tip_yield_pct, 0.25) * 25;
+    const c_tip = normalize(state.tip_yield_pct, 0.40) * 25;
     const c_eur = normalize(state.eur_pct, 0.35) * 15;
     const c_aud = normalize(state.aud_pct, 0.45) * 10;
     const c_jpy = -normalize(state.jpy_pct, 0.50) * 10;
@@ -1100,6 +1254,11 @@
 
     // Smooth composite score to prevent erratic front-page jitter
     state.smoothed_score = parseFloat((0.88 * state.smoothed_score + 0.12 * state.comp_score).toFixed(1));
+
+    // Record for front-page composite chart (keep last ~180 samples ≈ 4–5 min at 1.5s poll)
+    if (!window._compHistory) window._compHistory = [];
+    window._compHistory.push({ t: Date.now(), v: state.smoothed_score });
+    if (window._compHistory.length > 180) window._compHistory.shift();
 
     if (state.smoothed_score <= -25) {
       state.signal_text = "STRONG SELL GOLD";
@@ -1299,23 +1458,21 @@
       return;
     }
 
-    // --- GOLD ---
-    try {
-      const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval=${interval}&limit=300`);
-      const raw = await res.json();
-      if (Array.isArray(raw) && raw.length > 10) {
-        const bars = raw.map(k => ({
-          openTime: k[0], open: k[1], high: k[2], low: k[3], close: k[4], volume: k[5], tickVolume: k[7]
-        }));
-        if (applyCandleSeries(bars, interval, 'gold')) { isFetchingCandles = false; return; }
-      }
-    } catch (_) {}
-
+    // --- GOLD (XAUUSD only — no PAXG mix) ---
     try {
       const data2 = await fetchJson(`https://biquote.io/api/XAUUSD/ohlc?interval=${bqInterval}&limit=150`);
       let bars2 = (data2 && data2.bars) ? data2.bars.slice() : [];
       if (bars2.length > 1 && new Date(bars2[0].openTime) > new Date(bars2[bars2.length - 1].openTime)) bars2.reverse();
-      applyCandleSeries(bars2, interval, 'gold');
+      if (applyCandleSeries(bars2, interval, 'gold')) { isFetchingCandles = false; return; }
+    } catch (e) {
+      console.warn('biquote gold OHLC fail', e);
+    }
+    // Fallback: 15m if requested interval failed
+    try {
+      const data3 = await fetchJson(`https://biquote.io/api/XAUUSD/ohlc?interval=15m&limit=150`);
+      let bars3 = (data3 && data3.bars) ? data3.bars.slice() : [];
+      if (bars3.length > 1 && new Date(bars3[0].openTime) > new Date(bars3[bars3.length - 1].openTime)) bars3.reverse();
+      applyCandleSeries(bars3, interval, 'gold');
     } catch (e) {
       console.warn('Gold candle fetch error', e);
     }
@@ -2060,106 +2217,125 @@
     document.getElementById("chartModal").style.display = "none";
   }
 
-  // Real-Time High-Speed WebSocket Engine (Gold & Interbank Forex)
-  let wsInstance = null;
-
+  // No Binance PAXG websocket — it diverges from XAUUSD spot and corrupts the gold chart.
+  // All gold + FX prices come from biquote (CORS-friendly, real day %).
   function initLiveSocket() {
-    if (wsInstance) {
-      try { wsInstance.close(); } catch(e){}
-    }
-    
-    wsInstance = new WebSocket("wss://stream.binance.com:9443/stream?streams=paxgusdt@miniTicker/paxgusdt@trade/eurusdt@miniTicker");
-    
-    wsInstance.onopen = () => {
-      const statusEl = document.getElementById("session-status");
-      if (statusEl) statusEl.textContent = "● Real-Time Interbank Feed Synchronized";
-    };
-
-    wsInstance.onmessage = (e) => {
-      try {
-        const raw = JSON.parse(e.data);
-        const data = raw.data || raw;
-
-        if (data.s === "PAXGUSDT" && (data.e === "24hrMiniTicker" || data.c)) {
-          const newP = parseFloat(data.c || data.p);
-          if (!isNaN(newP)) {
-            state.gold_price = newP;
-            // Only update live candle when GOLD chart is open (never corrupt DXY candles)
-            if (state.chartAsset === 'gold' && candleHistory.length > 0) {
-              const cur = candleHistory[candleHistory.length - 1];
-              cur.c = newP;
-              if (newP > cur.h) cur.h = newP;
-              if (newP < cur.l) cur.l = newP;
-            }
-            recalculateMetricsInstant();
-          }
-        }
-
-        if (data.e === "trade" && data.s === "PAXGUSDT") {
-          const tradePrice = parseFloat(data.p);
-          if (!isNaN(tradePrice)) {
-            state.gold_price = tradePrice;
-            if (state.chartAsset === 'gold' && candleHistory.length > 0) {
-              const cur = candleHistory[candleHistory.length - 1];
-              cur.c = tradePrice;
-              if (tradePrice > cur.h) cur.h = tradePrice;
-              if (tradePrice < cur.l) cur.l = tradePrice;
-            }
-            recalculateMetricsInstant();
-          }
-        }
-
-        if (data.s === "EURUSDT" && data.c) {
-          const newEur = parseFloat(data.c);
-          if (!isNaN(newEur)) {
-            state.eur_price = newEur;
-            const eurDelta = (state.eur_price - state.eur_open_session) / state.eur_open_session;
-            state.aud_price = parseFloat((state.aud_open_session * (1 + eurDelta * 1.1)).toFixed(5));
-            state.jpy_price = parseFloat((state.jpy_open_session * (1 - eurDelta * 0.8)).toFixed(3));
-            state.chf_price = parseFloat((state.chf_open_session * (1 - eurDelta * 0.85)).toFixed(5));
-            recalculateMetricsInstant();
-          }
-        }
-      } catch(err){}
-    };
-
-    wsInstance.onerror = () => { setTimeout(initLiveSocket, 2500); };
-    wsInstance.onclose = () => { setTimeout(initLiveSocket, 1500); };
+    const statusEl = document.getElementById("session-status");
+    if (statusEl) statusEl.textContent = "● Real-Time Market Feed (biquote)";
   }
 
-  // Active Multi-Pair Real-Time Poller
-  async function pollRealForexLive() {
-    try {
-      const res = await fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR,AUD,JPY,CHF');
-      const data = await res.json();
-      if (data && data.rates) {
-        const r = data.rates;
-        if (r.EUR && !wsInstance) state.eur_price = parseFloat((1 / r.EUR).toFixed(5));
-        if (r.AUD) state.aud_price = parseFloat((1 / r.AUD).toFixed(5));
-        if (r.JPY) state.jpy_price = parseFloat(r.JPY.toFixed(3));
-        if (r.CHF) state.chf_price = parseFloat(r.CHF.toFixed(5));
-      }
-    } catch(e) {}
+  // US 10Y T-Note PRICE — matches TradingView USB10YUSD (~104–107), NOT yield %
+  // Yahoo ZN=F futures track the same instrument family as OANDA USB10YUSD.
+  function applyBondPriceChart(yData) {
+    const result = yData && yData.chart && yData.chart.result && yData.chart.result[0];
+    if (!result) return false;
+    const meta = result.meta || {};
+    let px = parseFloat(meta.regularMarketPrice);
+    if (!(px > 50 && px < 200)) return false;
 
-    // Live DXY from free biquote feed
+    let prev = null;
     try {
-      const dxyRes = await fetch('https://biquote.io/api/DXY');
-      const dxy = await dxyRes.json();
-      if (dxy && (dxy.bid || dxy.last || dxy.ask)) {
-        const px = parseFloat(dxy.bid || dxy.last || dxy.ask);
-        if (!isNaN(px) && px > 50) {
-          state.dxy_price = px;
-          if (dxy.dayDiffPercent != null) state.dxy_pct = parseFloat(dxy.dayDiffPercent);
-          // Live-build the current (forming) candle on DXY chart
-          if (state.chartAsset === 'dxy' && candleHistory.length > 0 && candlesMatchAsset(candleHistory, 'dxy')) {
-            const cur = candleHistory[candleHistory.length - 1];
-            cur.c = px;
-            if (px > cur.h) cur.h = px;
-            if (px < cur.l) cur.l = px;
-          }
-        }
+      const closes = (result.indicators && result.indicators.quote && result.indicators.quote[0] && result.indicators.quote[0].close) || [];
+      const clean = closes.filter(c => c != null && !isNaN(c) && c > 50).map(c => parseFloat(c));
+      if (clean.length >= 2) {
+        const lastClose = clean[clean.length - 1];
+        prev = clean[clean.length - 2];
+        if (Math.abs(lastClose - px) > 0.5) prev = lastClose;
       }
-    } catch(e) {}
+    } catch (e) {}
+    if (prev == null) {
+      const p = parseFloat(meta.previousClose || meta.chartPreviousClose || 0);
+      if (p > 50 && p < 200) prev = p;
+    }
+
+    state.tip_price = parseFloat(px.toFixed(3));
+    if (prev != null && prev > 50) {
+      state.tip_yield_pct = parseFloat((((px - prev) / prev) * 100).toFixed(2));
+      state.tip_yield_pts = parseFloat((px - prev).toFixed(3));
+    } else {
+      state.tip_yield_pct = 0;
+      state.tip_yield_pts = 0;
+    }
+    state._feed_tip_yield_pct = true;
+    return true;
+  }
+
+  async function fetchUS10YYield() {
+    // ZN=F ≈ USB10YUSD price; ZB=F / TLT as fallbacks
+    const symbols = ['ZN=F', 'ZB=F', 'TLT'];
+    for (const sym of symbols) {
+      const yPath = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(sym) + '?interval=1d&range=10d';
+      const urls = [
+        yPath,
+        'https://corsproxy.io/?' + encodeURIComponent(yPath),
+        'https://api.allorigins.win/raw?url=' + encodeURIComponent(yPath),
+        'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(yPath)
+      ];
+      for (const url of urls) {
+        try {
+          const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+          if (!res.ok) continue;
+          const yData = await res.json();
+          if (applyBondPriceChart(yData)) return true;
+        } catch (e) {}
+      }
+    }
+    return false;
+  }
+
+  // Apply one biquote tick → price + real dayDiffPercent
+  function applyBiquoteTick(data, priceKey, pctKey, openKey, minPx, maxPx, digits) {
+    if (!data || data.message) return false;
+    const px = parseFloat(data.mid || data.bid || data.ask || data.last);
+    if (isNaN(px) || px < minPx || px > maxPx) return false;
+    state[priceKey] = parseFloat(px.toFixed(digits));
+    if (data.dayDiffPercent != null && !isNaN(parseFloat(data.dayDiffPercent))) {
+      state[pctKey] = parseFloat(parseFloat(data.dayDiffPercent).toFixed(2));
+      state[openKey] = parseFloat((px / (1 + state[pctKey] / 100)).toFixed(digits));
+      state['_feed_' + pctKey] = true; // protect from overwrite in recalculate
+    }
+    return true;
+  }
+
+  // Active Multi-Pair Real-Time Poller — ALL pairs from live market feeds
+  async function pollRealForexLive() {
+    // Parallel fetch: Gold + DXY + 4 FX pairs
+    const symbols = [
+      ['XAUUSD', 'gold_price', 'gold_pct', 'gold_open_session', 500, 10000, 2],
+      ['DXY', 'dxy_price', 'dxy_pct', 'dxy_open_session', 50, 200, 3],
+      ['EURUSD', 'eur_price', 'eur_pct', 'eur_open_session', 0.5, 2, 5],
+      ['AUDUSD', 'aud_price', 'aud_pct', 'aud_open_session', 0.3, 1.5, 5],
+      ['USDJPY', 'jpy_price', 'jpy_pct', 'jpy_open_session', 50, 250, 3],
+      ['USDCHF', 'chf_price', 'chf_pct', 'chf_open_session', 0.4, 2, 5]
+    ];
+
+    await Promise.all(symbols.map(async ([sym, pk, pctk, ok, minP, maxP, dig]) => {
+      try {
+        const res = await fetch('https://biquote.io/api/' + sym);
+        const data = await res.json();
+        applyBiquoteTick(data, pk, pctk, ok, minP, maxP, dig);
+        // Gold change $ from open
+        if (sym === 'XAUUSD' && state.gold_open_session > 500) {
+          state.gold_change = parseFloat((state.gold_price - state.gold_open_session).toFixed(2));
+        }
+        // Live candle sync
+        if (sym === 'XAUUSD' && state.chartAsset === 'gold' && candleHistory.length > 0 && candlesMatchAsset(candleHistory, 'gold')) {
+          const cur = candleHistory[candleHistory.length - 1];
+          cur.c = state.gold_price;
+          if (state.gold_price > cur.h) cur.h = state.gold_price;
+          if (state.gold_price < cur.l) cur.l = state.gold_price;
+        }
+        if (sym === 'DXY' && state.chartAsset === 'dxy' && candleHistory.length > 0 && candlesMatchAsset(candleHistory, 'dxy')) {
+          const cur = candleHistory[candleHistory.length - 1];
+          cur.c = state.dxy_price;
+          if (state.dxy_price > cur.h) cur.h = state.dxy_price;
+          if (state.dxy_price < cur.l) cur.l = state.dxy_price;
+        }
+      } catch (e) {}
+    }));
+
+    // REAL US 10Y yield (^TNX) — try direct Yahoo then CORS proxies
+    await fetchUS10YYield();
 
     recalculateMetricsInstant();
   }
@@ -2175,10 +2351,17 @@
 
   // Self-Bootstrapping Engine
   function initApp() {
+    // Seed composite history so chart is not empty on first paint
+    window._compHistory = [];
+    const seed = state.smoothed_score || 0;
+    for (let i = 0; i < 12; i++) {
+      window._compHistory.push({ t: Date.now() - (12 - i) * 1500, v: seed });
+    }
     pollRealForexLive();
     initLiveSocket();
     fetchRealCandles(state.tf_interval);
     setInterval(pollRealForexLive, 1500);
+    setTimeout(drawCompScoreChart, 200);
   }
 
   initApp();
