@@ -1381,6 +1381,15 @@
     return res.json();
   }
 
+  // Hard timeout so slow CORS proxies never freeze the UI
+  function fetchWithTimeout(url, ms, opts) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms || 4000);
+    return fetch(url, { ...(opts || {}), signal: ctrl.signal })
+      .then(r => { clearTimeout(t); return r; })
+      .catch(e => { clearTimeout(t); throw e; });
+  }
+
   // Yahoo Finance interval map
   function yahooInterval(interval) {
     const m = { '1m': '1m', '3m': '5m', '5m': '5m', '15m': '15m', '1h': '60m', '4h': '60m', '1d': '1d' };
@@ -2260,27 +2269,46 @@
     return true;
   }
 
+  let _us10yInflight = false;
+  let _us10yLastOk = 0;
+
   async function fetchUS10YYield() {
-    // ZN=F ≈ USB10YUSD price; ZB=F / TLT as fallbacks
-    const symbols = ['ZN=F', 'ZB=F', 'TLT'];
-    for (const sym of symbols) {
-      const yPath = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(sym) + '?interval=1d&range=10d';
+    // Don't spam / block — refresh at most every 30s
+    if (_us10yInflight) return false;
+    if (state.tip_price > 50 && (Date.now() - _us10yLastOk) < 30000) return true;
+    _us10yInflight = true;
+    try {
+      const yPath = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent('ZN=F') + '?interval=1d&range=5d';
+      // Race fastest working source (3s each max)
       const urls = [
         yPath,
         'https://corsproxy.io/?' + encodeURIComponent(yPath),
-        'https://api.allorigins.win/raw?url=' + encodeURIComponent(yPath),
-        'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(yPath)
+        'https://api.allorigins.win/raw?url=' + encodeURIComponent(yPath)
       ];
-      for (const url of urls) {
-        try {
-          const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-          if (!res.ok) continue;
-          const yData = await res.json();
-          if (applyBondPriceChart(yData)) return true;
-        } catch (e) {}
+      const attempts = urls.map(url =>
+        fetchWithTimeout(url, 2500, { headers: { 'Accept': 'application/json' } })
+          .then(r => { if (!r.ok) throw new Error('bad'); return r.json(); })
+          .then(yData => {
+            if (applyBondPriceChart(yData)) return true;
+            throw new Error('parse');
+          })
+      );
+      // Promise.any with fallback for older WebViews
+      if (typeof Promise.any === 'function') {
+        await Promise.any(attempts);
+      } else {
+        await new Promise((resolve, reject) => {
+          let fails = 0;
+          attempts.forEach(p => p.then(resolve).catch(() => { if (++fails === attempts.length) reject(); }));
+        });
       }
+      _us10yLastOk = Date.now();
+      return true;
+    } catch (e) {
+      return false;
+    } finally {
+      _us10yInflight = false;
     }
-    return false;
   }
 
   // Apply one biquote tick → price + real dayDiffPercent
@@ -2297,47 +2325,60 @@
     return true;
   }
 
-  // Active Multi-Pair Real-Time Poller — ALL pairs from live market feeds
-  async function pollRealForexLive() {
-    // Parallel fetch: Gold + DXY + 4 FX pairs
-    const symbols = [
-      ['XAUUSD', 'gold_price', 'gold_pct', 'gold_open_session', 500, 10000, 2],
-      ['DXY', 'dxy_price', 'dxy_pct', 'dxy_open_session', 50, 200, 3],
-      ['EURUSD', 'eur_price', 'eur_pct', 'eur_open_session', 0.5, 2, 5],
-      ['AUDUSD', 'aud_price', 'aud_pct', 'aud_open_session', 0.3, 1.5, 5],
-      ['USDJPY', 'jpy_price', 'jpy_pct', 'jpy_open_session', 50, 250, 3],
-      ['USDCHF', 'chf_price', 'chf_pct', 'chf_open_session', 0.4, 2, 5]
-    ];
+  let _pollInflight = false;
+  let _lastUiPaint = 0;
 
-    await Promise.all(symbols.map(async ([sym, pk, pctk, ok, minP, maxP, dig]) => {
-      try {
-        const res = await fetch('https://biquote.io/api/' + sym);
-        const data = await res.json();
-        applyBiquoteTick(data, pk, pctk, ok, minP, maxP, dig);
-        // Gold change $ from open
-        if (sym === 'XAUUSD' && state.gold_open_session > 500) {
-          state.gold_change = parseFloat((state.gold_price - state.gold_open_session).toFixed(2));
-        }
-        // Live candle sync
-        if (sym === 'XAUUSD' && state.chartAsset === 'gold' && candleHistory.length > 0 && candlesMatchAsset(candleHistory, 'gold')) {
-          const cur = candleHistory[candleHistory.length - 1];
-          cur.c = state.gold_price;
-          if (state.gold_price > cur.h) cur.h = state.gold_price;
-          if (state.gold_price < cur.l) cur.l = state.gold_price;
-        }
-        if (sym === 'DXY' && state.chartAsset === 'dxy' && candleHistory.length > 0 && candlesMatchAsset(candleHistory, 'dxy')) {
-          const cur = candleHistory[candleHistory.length - 1];
-          cur.c = state.dxy_price;
-          if (state.dxy_price > cur.h) cur.h = state.dxy_price;
-          if (state.dxy_price < cur.l) cur.l = state.dxy_price;
-        }
-      } catch (e) {}
-    }));
-
-    // REAL US 10Y yield (^TNX) — try direct Yahoo then CORS proxies
-    await fetchUS10YYield();
-
+  function paintLiveUI() {
+    const now = Date.now();
+    if (now - _lastUiPaint < 100) return;
+    _lastUiPaint = now;
     recalculateMetricsInstant();
+  }
+
+  // Each pair updates the UI as soon as its quote returns (no waiting for all 6)
+  async function pollRealForexLive() {
+    if (_pollInflight) return;
+    _pollInflight = true;
+    try {
+      const symbols = [
+        ['XAUUSD', 'gold_price', 'gold_pct', 'gold_open_session', 500, 10000, 2],
+        ['DXY', 'dxy_price', 'dxy_pct', 'dxy_open_session', 50, 200, 3],
+        ['EURUSD', 'eur_price', 'eur_pct', 'eur_open_session', 0.5, 2, 5],
+        ['AUDUSD', 'aud_price', 'aud_pct', 'aud_open_session', 0.3, 1.5, 5],
+        ['USDJPY', 'jpy_price', 'jpy_pct', 'jpy_open_session', 50, 250, 3],
+        ['USDCHF', 'chf_price', 'chf_pct', 'chf_open_session', 0.4, 2, 5]
+      ];
+
+      await Promise.all(symbols.map(async ([sym, pk, pctk, ok, minP, maxP, dig]) => {
+        try {
+          const res = await fetchWithTimeout('https://biquote.io/api/' + sym, 2200);
+          if (!res.ok) return;
+          const data = await res.json();
+          if (!applyBiquoteTick(data, pk, pctk, ok, minP, maxP, dig)) return;
+          if (sym === 'XAUUSD' && state.gold_open_session > 500) {
+            state.gold_change = parseFloat((state.gold_price - state.gold_open_session).toFixed(2));
+          }
+          if (sym === 'XAUUSD' && state.chartAsset === 'gold' && candleHistory.length > 0 && candlesMatchAsset(candleHistory, 'gold')) {
+            const cur = candleHistory[candleHistory.length - 1];
+            cur.c = state.gold_price;
+            if (state.gold_price > cur.h) cur.h = state.gold_price;
+            if (state.gold_price < cur.l) cur.l = state.gold_price;
+          }
+          if (sym === 'DXY' && state.chartAsset === 'dxy' && candleHistory.length > 0 && candlesMatchAsset(candleHistory, 'dxy')) {
+            const cur = candleHistory[candleHistory.length - 1];
+            cur.c = state.dxy_price;
+            if (state.dxy_price > cur.h) cur.h = state.dxy_price;
+            if (state.dxy_price < cur.l) cur.l = state.dxy_price;
+          }
+          paintLiveUI(); // paint immediately when THIS pair arrives
+        } catch (e) {}
+      }));
+
+      paintLiveUI();
+      fetchUS10YYield().then(ok => { if (ok) paintLiveUI(); }).catch(() => {});
+    } finally {
+      _pollInflight = false;
+    }
   }
 
   function emergencyRefresh() {
@@ -2357,11 +2398,12 @@
     for (let i = 0; i < 12; i++) {
       window._compHistory.push({ t: Date.now() - (12 - i) * 1500, v: seed });
     }
-    pollRealForexLive();
     initLiveSocket();
-    fetchRealCandles(state.tf_interval);
-    setInterval(pollRealForexLive, 1500);
-    setTimeout(drawCompScoreChart, 200);
+    // Immediate first tick + candles; poll every 1s for snappy updates
+    pollRealForexLive();
+    setTimeout(() => fetchRealCandles(state.tf_interval, false), 50);
+    setInterval(pollRealForexLive, 1000);
+    setTimeout(drawCompScoreChart, 100);
   }
 
   initApp();
