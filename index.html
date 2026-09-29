@@ -585,20 +585,20 @@
       <span class="weight-subtitle">35% weight - Direct Real-Time Market Proximity</span>
     </div>
 
-    <!-- ROW 2: US 10Y Yield -->
+    <!-- ROW 2: US 10Y Yield — live via TradingView official single-quote (TVC:US10Y) -->
     <div class="asset-row live-pair-row">
-      <div class="live-pair-main">
+      <div class="live-pair-main" style="align-items:center;">
         <div class="live-pair-left">
           <span class="live-pair-name">US10Y</span>
-          <span class="live-pair-desc">10Y T-Note Price (USB10YUSD / ZN)</span>
+          <span class="live-pair-desc" id="lp-us10y-desc">10Y Treasury Yield · Live</span>
         </div>
-        <div class="live-pair-right">
+        <div class="live-pair-right" id="lp-us10y-box" style="min-width:140px;min-height:42px;">
           <span class="live-pair-price" id="lp-us10y">—</span>
           <span class="live-pair-chg" id="lp-us10y-chg">—</span>
         </div>
       </div>
-      <span class="weight-subtitle">25% weight — Bond price up = yields down = gold support</span>
-    </div>
+      <span class="weight-subtitle" id="lp-us10y-w">25% weight — Yield up = gold headwind</span>
+        </div>
 
     <!-- ROW 3: EURUSD -->
     <div class="asset-row live-pair-row">
@@ -1162,8 +1162,42 @@
     };
 
     setPair('lp-dxy', 'lp-dxy-chg', state.dxy_price, state.dxy_pct, 3);
-    // US10Y = T-Note PRICE (like TV USB10YUSD ~104.x), day % from prior close
-    setPair('lp-us10y', 'lp-us10y-chg', state.tip_price > 50 ? state.tip_price : null, state._feed_tip_yield_pct ? state.tip_yield_pct : null, 3);
+    // US10Y: yield % (DGS10) or bond price (ZN) depending on feed
+    {
+      const pEl = document.getElementById('lp-us10y');
+      const cEl = document.getElementById('lp-us10y-chg');
+      const dEl = document.getElementById('lp-us10y-desc');
+      const wEl = document.getElementById('lp-us10y-w');
+      if (state.tip_price > 1 && state._feed_tip_yield_pct) {
+        if (_us10yMode === 'yield') {
+          if (pEl) pEl.textContent = state.tip_price.toFixed(3) + '%';
+          if (cEl) {
+            const pts = state.tip_yield_pts || 0;
+            const bps = Math.round(pts * 100);
+            const sign = pts > 0 ? '+' : '';
+            cEl.textContent = `${sign}${pts.toFixed(3)} (${sign}${bps} bp)`;
+            cEl.className = 'live-pair-chg ' + (pts > 0.005 ? 'pos' : (pts < -0.005 ? 'neg' : 'flat'));
+          }
+          if (dEl) dEl.textContent = '10Y Treasury Yield · Live';
+          if (wEl) wEl.textContent = '25% weight — Yield up = gold headwind';
+        } else {
+          if (pEl) pEl.textContent = state.tip_price.toFixed(3);
+          if (cEl) {
+            const pct = state.tip_yield_pct || 0;
+            const sign = pct >= 0 ? '+' : '';
+            cEl.textContent = `${sign}${pct.toFixed(2)}%`;
+            cEl.className = 'live-pair-chg ' + (pct > 0.01 ? 'pos' : (pct < -0.01 ? 'neg' : 'flat'));
+          }
+          if (dEl) dEl.textContent = '10Y T-Note Price · Live';
+          if (wEl) wEl.textContent = '25% weight — Bond price up = gold support';
+        }
+      } else {
+        if (pEl) pEl.textContent = 'offline';
+        if (cEl) { cEl.textContent = 'phone blocks feed'; cEl.className = 'live-pair-chg flat'; }
+        if (dEl) dEl.textContent = '10Y Treasury Yield · blocked on device';
+        if (wEl) wEl.textContent = 'Weight shifted to other pairs until live';
+      }
+    }
     setPair('lp-eur', 'lp-eur-chg', state.eur_price, state.eur_pct, 5);
     setPair('lp-aud', 'lp-aud-chg', state.aud_price, state.aud_pct, 5);
     setPair('lp-jpy', 'lp-jpy-chg', state.jpy_price, state.jpy_pct, 3);
@@ -1241,13 +1275,24 @@
 
     const normalize = (pct, stdVol) => Math.max(-1.0, Math.min(1.0, pct / stdVol));
 
-    // tip = T-Note PRICE day % (price UP → yields DOWN → gold bullish → positive weight)
-    const c_dxy = -normalize(state.dxy_pct, 0.35) * 35;
-    const c_tip = normalize(state.tip_yield_pct, 0.40) * 25;
-    const c_eur = normalize(state.eur_pct, 0.35) * 15;
-    const c_aud = normalize(state.aud_pct, 0.45) * 10;
-    const c_jpy = -normalize(state.jpy_pct, 0.50) * 10;
-    const c_chf = -normalize(state.chf_pct, 0.45) * 5;
+    // US10Y only counts when live feed is active; otherwise redistribute 25% weight
+    const has10y = !!(state._feed_tip_yield_pct && state.tip_price > 1);
+    const wDxy = has10y ? 35 : 47;
+    const wTip = has10y ? 25 : 0;
+    const wEur = has10y ? 15 : 20;
+    const wAud = has10y ? 10 : 13;
+    const wJpy = has10y ? 10 : 13;
+    const wChf = has10y ? 5 : 7;
+    const c_dxy = -normalize(state.dxy_pct, 0.35) * wDxy;
+    const c_tip = !has10y ? 0 : (
+      (_us10yMode === 'price')
+        ? normalize(state.tip_yield_pct, 0.40) * wTip
+        : -normalize(state.tip_yield_pct, 2.0) * wTip
+    );
+    const c_eur = normalize(state.eur_pct, 0.35) * wEur;
+    const c_aud = normalize(state.aud_pct, 0.45) * wAud;
+    const c_jpy = -normalize(state.jpy_pct, 0.50) * wJpy;
+    const c_chf = -normalize(state.chf_pct, 0.45) * wChf;
 
     const normalizedComposite = c_dxy + c_tip + c_eur + c_aud + c_jpy + c_chf;
     state.comp_score = Math.max(-100, Math.min(100, parseFloat(normalizedComposite.toFixed(1))));
@@ -2233,15 +2278,50 @@
     if (statusEl) statusEl.textContent = "● Real-Time Market Feed (biquote)";
   }
 
-  // US 10Y T-Note PRICE — matches TradingView USB10YUSD (~104–107), NOT yield %
-  // Yahoo ZN=F futures track the same instrument family as OANDA USB10YUSD.
+  // US10Y: ConvexTrade DGS10 (CORS-friendly real yield) first; Yahoo ZN=F price if available
+  // ========== US10Y LIVE PROXY ==========
+  // 1) Deploy us10y-proxy-worker.js on Cloudflare (free) OR run: node us10y-proxy-server.js
+  // 2) Put your proxy URL here (examples below)
+  // Cloudflare:  'https://your-name.your-subdomain.workers.dev'
+  // Local Node:  'http://192.168.1.10:8787'  (your PC IP on same WiFi)
+  const US10Y_PROXY_URL = '';  // <-- PASTE PROXY URL HERE
+  // ======================================
+
+  let _us10yInflight = false;
+  let _us10yLastOk = 0;
+  let _us10yLastTry = 0;
+  let _us10yMode = 'yield'; // 'yield' | 'price'
+
+  function applyDgs10(json) {
+    const rows = (json && json.data) ? json.data : null;
+    if (!rows || !rows.length) return false;
+    const sorted = rows
+      .filter(r => r && r.value != null && !isNaN(parseFloat(r.value)))
+      .map(r => ({ date: r.date, v: parseFloat(r.value) }))
+      .filter(r => r.v > 0 && r.v < 20)
+      .sort((a, b) => (a.date < b.date ? -1 : 1));
+    if (!sorted.length) return false;
+    const last = sorted[sorted.length - 1];
+    const prev = sorted.length >= 2 ? sorted[sorted.length - 2] : null;
+    state.tip_price = parseFloat(last.v.toFixed(3));
+    if (prev) {
+      state.tip_yield_pts = parseFloat((last.v - prev.v).toFixed(3));
+      state.tip_yield_pct = parseFloat((((last.v - prev.v) / prev.v) * 100).toFixed(2));
+    } else {
+      state.tip_yield_pts = 0;
+      state.tip_yield_pct = 0;
+    }
+    state._feed_tip_yield_pct = true;
+    _us10yMode = 'yield';
+    return true;
+  }
+
   function applyBondPriceChart(yData) {
     const result = yData && yData.chart && yData.chart.result && yData.chart.result[0];
     if (!result) return false;
     const meta = result.meta || {};
     let px = parseFloat(meta.regularMarketPrice);
     if (!(px > 50 && px < 200)) return false;
-
     let prev = null;
     try {
       const closes = (result.indicators && result.indicators.quote && result.indicators.quote[0] && result.indicators.quote[0].close) || [];
@@ -2256,7 +2336,6 @@
       const p = parseFloat(meta.previousClose || meta.chartPreviousClose || 0);
       if (p > 50 && p < 200) prev = p;
     }
-
     state.tip_price = parseFloat(px.toFixed(3));
     if (prev != null && prev > 50) {
       state.tip_yield_pct = parseFloat((((px - prev) / prev) * 100).toFixed(2));
@@ -2266,37 +2345,234 @@
       state.tip_yield_pts = 0;
     }
     state._feed_tip_yield_pct = true;
+    _us10yMode = 'price';
     return true;
   }
 
-  let _us10yInflight = false;
-  let _us10yLastOk = 0;
-  let _us10yLastTry = 0;
+  function applyTnxYieldChart(yData) {
+    const result = yData && yData.chart && yData.chart.result && yData.chart.result[0];
+    if (!result) return false;
+    const meta = result.meta || {};
+    let yld = parseFloat(meta.regularMarketPrice);
+    // CBOE index sometimes ×10
+    if (yld > 20 && yld < 100) yld = yld / 10;
+    if (!(yld > 1 && yld < 20)) return false;
 
+    // Prefer daily series prior close — meta.chartPreviousClose is often stale (e.g. 4.97)
+    let prev = null;
+    try {
+      const closes = (result.indicators.quote[0].close || []).filter(c => c != null).map(Number);
+      const clean = closes.map(v => (v > 20 && v < 100) ? v / 10 : v).filter(v => v > 1 && v < 20);
+      if (clean.length >= 2) {
+        const lastBar = clean[clean.length - 1];
+        prev = (Math.abs(lastBar - yld) < 0.02) ? clean[clean.length - 2] : lastBar;
+      }
+    } catch (e) {}
+    if (prev == null) {
+      let p = parseFloat(meta.previousClose || meta.chartPreviousClose || 0);
+      if (p > 20 && p < 100) p = p / 10;
+      // Reject stale prev that implies >20 bp move
+      if (p > 1 && p < 20 && Math.abs(yld - p) <= 0.20) prev = p;
+    }
+
+    state.tip_price = parseFloat(yld.toFixed(3));
+    if (prev != null && prev > 1) {
+      state.tip_yield_pts = parseFloat((yld - prev).toFixed(3));
+      state.tip_yield_pct = parseFloat((((yld - prev) / prev) * 100).toFixed(2));
+    } else {
+      state.tip_yield_pts = 0;
+      state.tip_yield_pct = 0;
+    }
+    state._feed_tip_yield_pct = true;
+    _us10yMode = 'yield';
+    return true;
+  }
+
+  function applyTreasuryXml(xml) {
+    // Official daily par yield curve from home.treasury.gov (CORS open)
+    try {
+      if (!xml || xml.indexOf('BC_10YEAR') < 0) return false;
+      const dates = [];
+      const y10 = [];
+      const reDate = /<d:NEW_DATE[^>]*>([^<]+)</g;
+      const reY = /<d:BC_10YEAR[^>]*>([^<]+)</g;
+      let m;
+      while ((m = reDate.exec(xml)) !== null) dates.push(m[1].slice(0, 10));
+      while ((m = reY.exec(xml)) !== null) {
+        const v = parseFloat(m[1]);
+        if (!isNaN(v) && v > 0) y10.push(v);
+      }
+      if (y10.length < 1) return false;
+      const latest = y10[y10.length - 1];
+      const prev = y10.length > 1 ? y10[y10.length - 2] : null;
+      if (!(latest > 1 && latest < 20)) return false;
+      state.tip_price = parseFloat(latest.toFixed(3));
+      if (prev && prev > 1) {
+        const pts = latest - prev;
+        state.tip_yield_pts = parseFloat(pts.toFixed(3));
+        state.tip_yield_pct = parseFloat(((pts / prev) * 100).toFixed(2));
+      } else {
+        state.tip_yield_pts = 0;
+        state.tip_yield_pct = 0;
+      }
+      state._feed_tip_yield_pct = true;
+      _us10yMode = 'yield';
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function applyTvUs10y(json) {
+    try {
+      const rows = (json && json.data) || [];
+      for (let i = 0; i < rows.length; i++) {
+        const d = rows[i].d;
+        if (!d || !d.length) continue;
+        let yld = parseFloat(d[0]), chgPct = parseFloat(d[1]), chgAbs = parseFloat(d[2]);
+        if (isNaN(yld) || yld < 1 || yld > 20) {
+          yld = parseFloat(d[1]); chgPct = parseFloat(d[2]); chgAbs = parseFloat(d[3]);
+        }
+        if (yld > 20 && yld < 100) yld = yld / 10;
+        if (!(yld > 1 && yld < 20)) continue;
+        state.tip_price = parseFloat(yld.toFixed(3));
+        state.tip_yield_pts = !isNaN(chgAbs) ? parseFloat(chgAbs.toFixed(3)) : 0;
+        state.tip_yield_pct = !isNaN(chgPct) ? parseFloat(chgPct.toFixed(2)) : 0;
+        state._feed_tip_yield_pct = true;
+        _us10yMode = 'yield';
+        return true;
+      }
+      return false;
+    } catch (e) { return false; }
+  }
+
+  function applyProxyYield(j) {
+    if (!j || !(j.yield > 1 && j.yield < 20)) return false;
+    state.tip_price = parseFloat(Number(j.yield).toFixed(3));
+    state.tip_yield_pts = parseFloat(Number(j.change_pts || 0).toFixed(3));
+    state.tip_yield_pct = parseFloat(Number(j.change_pct || 0).toFixed(2));
+    state._feed_tip_yield_pct = true;
+    _us10yMode = 'yield';
+    return true;
+  }
+
+  // Direct-in-HTML: race every free browser path (no separate server needed)
   async function fetchUS10YYield() {
-    // At most one attempt every 45s; never blocks main feed
-    if (_us10yInflight) return false;
-    if ((Date.now() - _us10yLastTry) < 45000) return state.tip_price > 50;
-    if (state.tip_price > 50 && (Date.now() - _us10yLastOk) < 60000) return true;
+    const hasVal = state.tip_price > 1;
+    const minGap = hasVal ? 20000 : 2500;
+    if (_us10yInflight) {
+      if (Date.now() - _us10yLastTry > 7000) _us10yInflight = false;
+      else return false;
+    }
+    if ((Date.now() - _us10yLastTry) < minGap) return hasVal;
+    if (hasVal && (Date.now() - _us10yLastOk) < 25000) return true;
     _us10yInflight = true;
     _us10yLastTry = Date.now();
+
+    const race = (p, ms) => Promise.race([
+      p,
+      new Promise((_, rej) => setTimeout(() => rej(new Error('to')), ms || 4000))
+    ]);
+
     try {
-      const yPath = 'https://query1.finance.yahoo.com/v8/finance/chart/ZN%3DF?interval=1d&range=5d';
-      const urls = [
-        'https://api.allorigins.win/raw?url=' + encodeURIComponent(yPath),
-        yPath
-      ];
-      for (const url of urls) {
+      // Optional user proxy (if set) — true live Yahoo/TV
+      if (typeof US10Y_PROXY_URL === 'string' && US10Y_PROXY_URL.length > 8) {
         try {
-          const res = await fetchWithTimeout(url, 2000, { headers: { 'Accept': 'application/json' } });
-          if (!res.ok) continue;
-          const yData = await res.json();
-          if (applyBondPriceChart(yData)) {
-            _us10yLastOk = Date.now();
-            return true;
+          const res = await race(fetch(US10Y_PROXY_URL.replace(/\/$/, '') + '/'));
+          if (res && res.ok && applyProxyYield(await res.json())) {
+            _us10yLastOk = Date.now(); return true;
           }
         } catch (e) {}
       }
+
+      // 0b) U.S. Treasury official yield curve XML — CORS * works on phone (daily official)
+      try {
+        const ym = new Date().toISOString().slice(0, 7).replace('-', '');
+        const urls = [
+          'https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_yield_curve&field_tdr_date_value_month=' + ym,
+          'https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_yield_curve&field_tdr_date_value=2026'
+        ];
+        for (const turl of urls) {
+          try {
+            const res = await race(fetch(turl), 5000);
+            if (!res || !res.ok) continue;
+            const xml = await res.text();
+            if (applyTreasuryXml(xml)) {
+              _us10yLastOk = Date.now();
+              return true;
+            }
+          } catch (e) {}
+        }
+      } catch (e) {}
+
+      // 1) TradingView scanner (CORS often allows Origin:null)
+      const tvBody = JSON.stringify({
+        symbols: { tickers: ['TVC:US10Y', 'CBOE:TNX'], query: { types: [] } },
+        columns: ['close', 'change', 'change_abs']
+      });
+      for (const ep of [
+        'https://scanner.tradingview.com/global/scan',
+        'https://scanner.tradingview.com/bonds/scan'
+      ]) {
+        try {
+          const res = await race(fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: tvBody
+          }), 4500);
+          if (res && res.ok && applyTvUs10y(await res.json())) {
+            _us10yLastOk = Date.now(); return true;
+          }
+        } catch (e) {}
+      }
+
+      // 2) Yahoo ^TNX direct (works on some desktops / hosted pages)
+      const yahoo = 'https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX?interval=1d&range=5d';
+      try {
+        const res = await race(fetch(yahoo, { headers: { 'Accept': 'application/json' } }), 3500);
+        if (res && res.ok && applyTnxYieldChart(await res.json())) {
+          _us10yLastOk = Date.now(); return true;
+        }
+      } catch (e) {}
+
+      // 3) Free CORS gateways → Yahoo (direct in HTML, no your own server)
+      const enc = encodeURIComponent(yahoo);
+      const gateways = [
+        'https://api.allorigins.win/raw?url=' + enc,
+        'https://api.allorigins.win/get?url=' + enc,
+        'https://corsproxy.org/?' + enc,
+        'https://api.codetabs.com/v1/proxy?quest=' + enc
+      ];
+      for (const g of gateways) {
+        try {
+          const res = await race(fetch(g), 4000);
+          if (!res || !res.ok) continue;
+          let data = await res.json();
+          // allorigins /get wraps as { contents: "..." }
+          if (data && typeof data.contents === 'string') {
+            try { data = JSON.parse(data.contents); } catch (e) { continue; }
+          }
+          if (applyTnxYieldChart(data)) {
+            _us10yLastOk = Date.now(); return true;
+          }
+        } catch (e) {}
+      }
+
+      // 4) Fresh daily only (≤3 days) — never show multi-day-old 5.17 as "live"
+      try {
+        const start = new Date(Date.now() - 10 * 86400000).toISOString().slice(0, 10);
+        const res = await race(fetch('https://convextrade.com/api/public/data/DGS10?start=' + start), 3500);
+        if (res && res.ok) {
+          const json = await res.json();
+          const rows = (json && json.data) || [];
+          if (rows.length) {
+            const last = rows.slice().sort((a, b) => (a.date < b.date ? -1 : 1)).pop();
+            const age = (Date.now() - new Date(last.date + 'T00:00:00Z').getTime()) / 86400000;
+            if (age <= 3 && applyDgs10(json)) {
+              _us10yLastOk = Date.now(); return true;
+            }
+          }
+        }
+      } catch (e) {}
+
       return false;
     } finally {
       _us10yInflight = false;
@@ -2396,9 +2672,21 @@
     }
     initLiveSocket();
     // Immediate first tick + candles; poll every 1s for snappy updates
+    _us10yLastTry = 0;
+    _us10yLastOk = 0;
     pollRealForexLive();
+    setTimeout(() => fetchUS10YYield().then(ok => { if (ok) paintLiveUI(); }), 200);
+    setTimeout(() => fetchUS10YYield().then(ok => { if (ok) paintLiveUI(); }), 2000);
+    setTimeout(() => fetchUS10YYield().then(ok => { if (ok) paintLiveUI(); }), 5000);
     setTimeout(() => fetchRealCandles(state.tf_interval, false), 50);
     setInterval(pollRealForexLive, 1000);
+    // Dedicated US10Y retry when missing
+    setInterval(() => {
+      if (!(state.tip_price > 1)) {
+        _us10yLastTry = 0;
+        fetchUS10YYield().then(ok => { if (ok) paintLiveUI(); }).catch(() => {});
+      }
+    }, 5000);
     setTimeout(drawCompScoreChart, 100);
   }
 
