@@ -591,8 +591,8 @@
           <span class="live-pair-desc" id="lp-us10y-desc">10Y Treasury Yield · Live Market</span>
         </div>
         <div class="live-pair-right" id="lp-us10y-box" style="min-width:140px; text-align:right;">
-          <span class="live-pair-price" id="lp-us10y">5.247%</span>
-          <span class="live-pair-chg pos" id="lp-us10y-chg">+0.002 (+0.2 bp)</span>
+          <span class="live-pair-price" id="lp-us10y">—</span>
+          <span class="live-pair-chg" id="lp-us10y-chg">—</span>
         </div>
       </div>
       <span class="weight-subtitle" id="lp-us10y-w">25% weight — Yield up = gold headwind</span>
@@ -841,10 +841,10 @@
     chf_price: 0,
     dxy_price: 0,
     
-    // Live US10Y fields (Clean initialized values to prevent false saturation)
-    tip_price: 5.247,
-    tip_yield_pts: 0.002,
-    tip_yield_pct: 0.00,
+    // Live US10Y
+    tip_price: 0,
+    tip_yield_pts: 0,
+    tip_yield_pct: 0,
     _feed_tip_yield_pct: false,
 
     gold_open_session: 0,
@@ -871,11 +871,11 @@
     chartAsset: 'gold',
 
     tf_biases: {
-      '3m': { text: 'BEARISH', class: 'chip-bear', delta: -0.08 },
-      '5m': { text: 'BEARISH', class: 'chip-bear', delta: -0.12 },
-      '15m': { text: 'BEARISH', class: 'chip-bear', delta: -0.21 },
-      '1h': { text: 'BEARISH', class: 'chip-bear', delta: -0.38 },
-      '1d': { text: 'BEARISH', class: 'chip-bear', delta: -0.48 }
+      '3m': { text: 'NEUTRAL', class: 'chip-neut', delta: 0.00 },
+      '5m': { text: 'NEUTRAL', class: 'chip-neut', delta: 0.00 },
+      '15m': { text: 'NEUTRAL', class: 'chip-neut', delta: 0.00 },
+      '1h': { text: 'NEUTRAL', class: 'chip-neut', delta: 0.00 },
+      '1d': { text: 'NEUTRAL', class: 'chip-neut', delta: 0.00 }
     }
   };
 
@@ -1134,9 +1134,9 @@
     const setPair = (priceId, chgId, price, pct, digits) => {
       const pEl = document.getElementById(priceId);
       const cEl = document.getElementById(chgId);
-      if (pEl) pEl.textContent = (price != null && !isNaN(price)) ? price.toFixed(digits) : '—';
+      if (pEl) pEl.textContent = (price != null && !isNaN(price) && price > 0) ? price.toFixed(digits) : '—';
       if (cEl) {
-        if (pct == null || isNaN(pct)) {
+        if (pct == null || isNaN(pct) || price <= 0) {
           cEl.textContent = '—';
           cEl.className = 'live-pair-chg flat';
         } else {
@@ -1149,7 +1149,7 @@
 
     setPair('lp-dxy', 'lp-dxy-chg', state.dxy_price, state.dxy_pct, 3);
     
-    // US10Y Renderer
+    // Live US10Y Renderer
     {
       const pEl = document.getElementById('lp-us10y');
       const cEl = document.getElementById('lp-us10y-chg');
@@ -1162,6 +1162,9 @@
           cEl.textContent = `${sign}${pts.toFixed(3)} (${sign}${bps} bp)`;
           cEl.className = 'live-pair-chg ' + (pts > 0.002 ? 'pos' : (pts < -0.002 ? 'neg' : 'flat'));
         }
+      } else {
+        if (pEl) pEl.textContent = 'Syncing...';
+        if (cEl) { cEl.textContent = 'Connecting feed'; cEl.className = 'live-pair-chg flat'; }
       }
     }
 
@@ -1827,7 +1830,7 @@
 
     storedDemandOBs.forEach(ob => {
       const xStart = Math.max(0, getX(ob.startIndex));
-      const yTop = getY(ob.top);
+      const yTop = getY(ob.bottom);
       const yBottom = getY(ob.bottom);
       const obHeight = Math.max(8, yBottom - yTop);
       const obWidth = chartW - xStart;
@@ -2127,106 +2130,185 @@
     if (statusEl) statusEl.textContent = "● Real-Time Interbank Feed Synchronized";
   }
 
-  // Pure JSON Real-Time US10Y Pipeline (Working Pipeline)
+  // Authentic US10Y Engine (With auto-unlock protection)
   let _us10yInflight = false;
+  let _us10yLastOk = 0;
+  let _us10yLastTry = 0;
 
-  async function fetchLiveUS10YRealtime() {
-    if (_us10yInflight) return;
+  function applyTnxYieldChart(yData) {
+    const result = yData && yData.chart && yData.chart.result && yData.chart.result[0];
+    if (!result) return false;
+    const meta = result.meta || {};
+    let yld = parseFloat(meta.regularMarketPrice);
+    if (yld > 20 && yld < 100) yld = yld / 10;
+    if (!(yld > 1 && yld < 20)) return false;
+
+    let prev = null;
+    try {
+      const closes = (result.indicators.quote[0].close || []).filter(c => c != null).map(Number);
+      const clean = closes.map(v => (v > 20 && v < 100) ? v / 10 : v).filter(v => v > 1 && v < 20);
+      if (clean.length >= 2) {
+        const lastBar = clean[clean.length - 1];
+        prev = (Math.abs(lastBar - yld) < 0.02) ? clean[clean.length - 2] : lastBar;
+      }
+    } catch (e) {}
+    if (prev == null) {
+      let p = parseFloat(meta.previousClose || meta.chartPreviousClose || 0);
+      if (p > 20 && p < 100) p = p / 10;
+      if (p > 1 && p < 20 && Math.abs(yld - p) <= 0.35) prev = p;
+    }
+
+    state.tip_price = parseFloat(yld.toFixed(3));
+    if (prev != null && prev > 1) {
+      state.tip_yield_pts = parseFloat((yld - prev).toFixed(3));
+      state.tip_yield_pct = parseFloat((((yld - prev) / prev) * 100).toFixed(2));
+    } else {
+      state.tip_yield_pts = 0;
+      state.tip_yield_pct = 0;
+    }
+    state._feed_tip_yield_pct = true;
+    return true;
+  }
+
+  function applyTvUs10y(json) {
+    try {
+      const rows = (json && json.data) || [];
+      for (let i = 0; i < rows.length; i++) {
+        const d = rows[i].d;
+        if (!d || !d.length) continue;
+        let yld = parseFloat(d[0]), chgPct = parseFloat(d[1]), chgAbs = parseFloat(d[2]);
+        if (isNaN(yld) || yld < 1 || yld > 20) {
+          yld = parseFloat(d[1]); chgPct = parseFloat(d[2]); chgAbs = parseFloat(d[3]);
+        }
+        if (yld > 20 && yld < 100) yld = yld / 10;
+        if (!(yld > 1 && yld < 20)) continue;
+        state.tip_price = parseFloat(yld.toFixed(3));
+        state.tip_yield_pts = !isNaN(chgAbs) ? parseFloat(chgAbs.toFixed(3)) : 0;
+        state.tip_yield_pct = !isNaN(chgPct) ? parseFloat(chgPct.toFixed(2)) : 0;
+        state._feed_tip_yield_pct = true;
+        return true;
+      }
+      return false;
+    } catch (e) { return false; }
+  }
+
+  function applyTreasuryXml(xml) {
+    try {
+      if (!xml || xml.indexOf('BC_10YEAR') < 0) return false;
+      const y10 = [];
+      const reY = /<d:BC_10YEAR[^>]*>([^<]+)/g;
+      let m;
+      while ((m = reY.exec(xml)) !== null) {
+        const v = parseFloat(m[1]);
+        if (!isNaN(v) && v > 0) y10.push(v);
+      }
+      if (y10.length < 1) return false;
+      const latest = y10[y10.length - 1];
+      const prev = y10.length > 1 ? y10[y10.length - 2] : null;
+      if (!(latest > 1 && latest < 20)) return false;
+      state.tip_price = parseFloat(latest.toFixed(3));
+      if (prev && prev > 1) {
+        const pts = latest - prev;
+        state.tip_yield_pts = parseFloat(pts.toFixed(3));
+        state.tip_yield_pct = parseFloat(((pts / prev) * 100).toFixed(2));
+      } else {
+        state.tip_yield_pts = 0;
+        state.tip_yield_pct = 0;
+      }
+      state._feed_tip_yield_pct = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  async function fetchUS10YYield() {
+    const hasVal = state.tip_price > 1;
+    const minGap = hasVal ? 20000 : 2500;
+    
+    // Auto-release watchdog to prevent permanent hanging
+    if (_us10yInflight) {
+      if (Date.now() - _us10yLastTry > 5000) _us10yInflight = false;
+      else return false;
+    }
+    if ((Date.now() - _us10yLastTry) < minGap) return hasVal;
+    if (hasVal && (Date.now() - _us10yLastOk) < 25000) return true;
+    
     _us10yInflight = true;
+    _us10yLastTry = Date.now();
 
-    const raceTimeout = (promise, ms) =>
-      Promise.race([
-        promise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
-      ]);
+    const race = (p, ms) => Promise.race([
+      p,
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms || 3500))
+    ]);
 
     try {
-      // 1. CNBC Direct Real-time Interbank US10Y Quote Service (JSON output)
-      try {
-        const cnbcUrl = 'https://quote.cnbc.com/quote-html-webservice/quote.htm?noform=1&partnerId=2&fund=1&exthrs=0&output=json&symbolType=issue&symbols=US10Y';
-        const res = await raceTimeout(fetch(cnbcUrl), 3500);
-        if (res.ok) {
-          const json = await res.json();
-          const q = json && json.QuickQuoteResult && json.QuickQuoteResult.QuickQuote;
-          const quoteObj = Array.isArray(q) ? q[0] : q;
-          if (quoteObj && quoteObj.last) {
-            const yld = parseFloat(quoteObj.last);
-            const chg = parseFloat(quoteObj.change || '0');
-            const pct = parseFloat(quoteObj.change_pct || '0');
-            if (yld > 1 && yld < 15) {
-              state.tip_price = parseFloat(yld.toFixed(3));
-              state.tip_yield_pts = parseFloat(chg.toFixed(3));
-              state.tip_yield_pct = parseFloat(pct.toFixed(2));
-              state._feed_tip_yield_pct = true;
-              return;
-            }
-          }
-        }
-      } catch (e) {}
-
-      // 2. High-speed zero-CORS gateway to Yahoo Finance ^TNX Real-Time Interbank
-      const yahooGateways = [
-        'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX?interval=1d&range=5d'),
-        'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX?interval=1d&range=5d')
-      ];
-
-      for (const gUrl of yahooGateways) {
+      // 1. TradingView official public scanner
+      const tvBody = JSON.stringify({
+        symbols: { tickers: ['TVC:US10Y', 'CBOE:TNX'], query: { types: [] } },
+        columns: ['close', 'change', 'change_abs']
+      });
+      for (const ep of [
+        'https://scanner.tradingview.com/global/scan',
+        'https://scanner.tradingview.com/bonds/scan'
+      ]) {
         try {
-          const res = await raceTimeout(fetch(gUrl), 3500);
-          if (res.ok) {
-            const data = await res.json();
-            const result = data && data.chart && data.chart.result && data.chart.result[0];
-            if (result) {
-              const meta = result.meta || {};
-              let yld = parseFloat(meta.regularMarketPrice);
-              if (yld > 20 && yld < 100) yld = yld / 10;
-              if (yld > 1 && yld < 15) {
-                let prev = parseFloat(meta.chartPreviousClose || meta.previousClose || yld);
-                if (prev > 20 && prev < 100) prev = prev / 10;
-                const pts = yld - prev;
-                const pct = (pts / prev) * 100;
-                state.tip_price = parseFloat(yld.toFixed(3));
-                state.tip_yield_pts = parseFloat(pts.toFixed(3));
-                state.tip_yield_pct = parseFloat(pct.toFixed(2));
-                state._feed_tip_yield_pct = true;
-                return;
-              }
-            }
+          const res = await race(fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: tvBody
+          }), 3000);
+          if (res && res.ok && applyTvUs10y(await res.json())) {
+            _us10yLastOk = Date.now(); 
+            return true;
           }
         } catch (e) {}
       }
 
-      // 3. TradingView Direct JSON Scanner
-      try {
-        const tvRes = await raceTimeout(
-          fetch('https://scanner.tradingview.com/bonds/scan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              symbols: { tickers: ['TVC:US10Y'] },
-              columns: ['close', 'change', 'change_abs']
-            })
-          }),
-          3000
-        );
-        if (tvRes.ok) {
-          const tvData = await tvRes.json();
-          if (tvData && tvData.data && tvData.data.length > 0) {
-            const row = tvData.data[0].d;
-            let yld = parseFloat(row[0]);
-            let chgPct = parseFloat(row[1]);
-            let chgPts = parseFloat(row[2]);
-            if (yld > 1 && yld < 15) {
-              state.tip_price = parseFloat(yld.toFixed(3));
-              state.tip_yield_pts = parseFloat(chgPts.toFixed(3));
-              state.tip_yield_pct = parseFloat(chgPct.toFixed(2));
-              state._feed_tip_yield_pct = true;
-              return;
-            }
+      // 2. High-speed open gateways to ^TNX
+      const yahoo = 'https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX?interval=1d&range=5d';
+      const enc = encodeURIComponent(yahoo);
+      const gateways = [
+        'https://api.allorigins.win/raw?url=' + enc,
+        'https://api.allorigins.win/get?url=' + enc,
+        'https://corsproxy.org/?' + enc,
+        'https://api.codetabs.com/v1/proxy?quest=' + enc
+      ];
+      for (const g of gateways) {
+        try {
+          const res = await race(fetch(g), 3000);
+          if (!res || !res.ok) continue;
+          let data = await res.json();
+          if (data && typeof data.contents === 'string') {
+            try { data = JSON.parse(data.contents); } catch (e) { continue; }
           }
+          if (applyTnxYieldChart(data)) {
+            _us10yLastOk = Date.now(); 
+            return true;
+          }
+        } catch (e) {}
+      }
+
+      // 3. Official U.S. Treasury Curve (CORS open)
+      try {
+        const ym = new Date().toISOString().slice(0, 7).replace('-', '');
+        const currentYear = new Date().getFullYear();
+        const urls = [
+          'https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_yield_curve&field_tdr_date_value_month=' + ym,
+          'https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_yield_curve&field_tdr_date_value=' + currentYear
+        ];
+        for (const turl of urls) {
+          try {
+            const res = await race(fetch(turl), 3500);
+            if (!res || !res.ok) continue;
+            const xml = await res.text();
+            if (applyTreasuryXml(xml)) {
+              _us10yLastOk = Date.now(); 
+              return true;
+            }
+          } catch (e) {}
         }
       } catch (e) {}
 
+      return false;
     } finally {
       _us10yInflight = false;
       paintLiveUI();
@@ -2295,7 +2377,7 @@
     ];
 
     symbols.forEach(args => { tickOneSymbol.apply(null, args); });
-    fetchLiveUS10YRealtime();
+    fetchUS10YYield().then(ok => { if (ok) paintLiveUI(); }).catch(() => {});
   }
 
   function emergencyRefresh() {
@@ -2317,9 +2399,19 @@
       window._compHistory.push({ t: Date.now() - (12 - i) * 1500, v: seed });
     }
     initLiveSocket();
+    _us10yLastTry = 0;
+    _us10yLastOk = 0;
     pollRealForexLive();
+    setTimeout(() => fetchUS10YYield().then(ok => { if (ok) paintLiveUI(); }), 200);
+    setTimeout(() => fetchUS10YYield().then(ok => { if (ok) paintLiveUI(); }), 2000);
     setTimeout(() => fetchRealCandles(state.tf_interval, false), 50);
     setInterval(pollRealForexLive, 1000);
+    setInterval(() => {
+      if (!(state.tip_price > 1)) {
+        _us10yLastTry = 0;
+        fetchUS10YYield().then(ok => { if (ok) paintLiveUI(); }).catch(() => {});
+      }
+    }, 4000);
     setTimeout(drawCompScoreChart, 100);
   }
 
