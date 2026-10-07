@@ -9,7 +9,19 @@
 <meta name="theme-color" content="#080a0f">
 <style>
 * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-body { background-color: #050608; color: #e1e4ea; padding: 12px 8px; display: flex; justify-content: center; }
+html, body {
+  background-color: #050608;
+  color: #e1e4ea;
+  width: 100%;
+  min-height: 100%;
+}
+body {
+  padding: 12px 8px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-x: hidden;
+}
 
 .pin-lock-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -91,10 +103,18 @@ body { background-color: #050608; color: #e1e4ea; padding: 12px 8px; display: fl
 .card {
   background: #0c0e14; border-radius: 16px; border: 1px solid #1f2430;
   width: 100%; max-width: 480px; padding: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+  box-sizing: border-box;
 }
+
+.tablet-grid-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 @media (min-width: 768px) {
-  body { padding: 24px 16px; }
-  .card { max-width: 900px; padding: 22px; }
+  body { padding: 20px 16px; }
+  .card { max-width: 960px; padding: 20px; }
   .tablet-grid-layout {
     display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 16px; align-items: start;
   }
@@ -141,17 +161,23 @@ h1 { font-size: 17.5px; font-weight: 700; color: #ffffff; }
 }
 .comp-title { font-size: 12px; color: #787b86; font-weight: 500; }
 .comp-action { font-size: 24px; font-weight: 800; margin: 6px 0 10px 0; }
+
 .comp-chart-wrap {
   margin-top: 12px; border-radius: 10px; overflow: hidden;
-  background: #0b0e14; border: 1px solid #1a1f2a; height: 140px; position: relative;
+  background: #0b0e14; border: 1px solid #1a1f2a; height: 145px; position: relative;
+  contain: paint layout;
 }
-.comp-chart-wrap canvas { width: 100%; height: 100%; display: block; }
+.comp-chart-wrap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 .comp-chart-label {
   position: absolute; top: 6px; left: 10px; font-size: 10px;
-  color: #5f6368; font-weight: 600; letter-spacing: 0.3px; pointer-events: none;
+  color: #8e95a5; font-weight: 700; letter-spacing: 0.3px; pointer-events: none; z-index: 2;
 }
 .comp-chart-value {
-  position: absolute; top: 6px; right: 10px; font-size: 11px; font-weight: 700; pointer-events: none;
+  position: absolute; top: 6px; right: 10px; font-size: 11px; font-weight: 700; pointer-events: none; z-index: 2;
 }
 
 .action-sell { color: #ff2a44; }
@@ -169,7 +195,7 @@ h1 { font-size: 17.5px; font-weight: 700; color: #ffffff; }
 
 .btn-chart {
   width: 100%; background: #b48312; color: #ffffff; border: none;
-  padding: 13px; border-radius: 10px; font-weight: 700; font-size: 14px;
+  padding: 12px; border-radius: 10px; font-weight: 700; font-size: 13.5px;
   cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;
   margin-bottom: 14px; transition: background 0.2s;
 }
@@ -194,7 +220,7 @@ h1 { font-size: 17.5px; font-weight: 700; color: #ffffff; }
 
 .news-tab-accordion {
   background: #11141e; border: 1px solid #1f2533; border-radius: 10px;
-  margin-bottom: 14px; overflow: hidden;
+  margin-bottom: 4px; overflow: hidden;
 }
 .news-tab-header {
   padding: 10px 12px; display: flex; justify-content: space-between; align-items: center;
@@ -239,23 +265,53 @@ h1 { font-size: 17.5px; font-weight: 700; color: #ffffff; }
 
 .dashboard-card {
   width: 100%; background-color: #161a1e; border: 1px solid #242930;
-  border-radius: 12px; padding: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); margin-bottom: 14px;
+  border-radius: 12px; padding: 14px 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  box-sizing: border-box;
 }
 .asset-row {
-  position: relative; margin-bottom: 14px; border-bottom: 1px solid #1f242b; padding-bottom: 12px;
+  position: relative; margin-bottom: 12px; border-bottom: 1px solid #1f242b; padding-bottom: 10px;
+  overflow: hidden; min-width: 0;
 }
 .asset-row:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
-.weight-subtitle { font-size: 11px; color: #848e9c; margin-top: 4px; display: block; padding-left: 2px; font-weight: 400; }
-.live-pair-main { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.live-pair-left { display: flex; flex-direction: column; gap: 2px; }
-.live-pair-name { font-size: 14px; font-weight: 700; color: #ffffff; letter-spacing: 0.3px; }
-.live-pair-desc { font-size: 11px; color: #787b86; }
-.live-pair-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-.live-pair-price { font-size: 16px; font-weight: 700; color: #e1e4ea; font-variant-numeric: tabular-nums; }
-.live-pair-chg { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.weight-subtitle {
+  font-size: 10.5px; color: #848e9c; margin-top: 4px; display: block; padding-left: 2px; font-weight: 400;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+.live-pair-main {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  min-width: 0; width: 100%;
+}
+.live-pair-left {
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 0; flex: 1 1 auto; overflow: hidden;
+}
+.live-pair-name {
+  font-size: 14px; font-weight: 700; color: #ffffff; letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+.live-pair-desc {
+  font-size: 11px; color: #787b86;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+.live-pair-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+  flex: 0 0 auto; min-width: 88px;
+}
+.live-pair-price {
+  font-size: 15px; font-weight: 700; color: #e1e4ea; font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.live-pair-chg {
+  font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 .live-pair-chg.pos { color: #00f59b; }
 .live-pair-chg.neg { color: #ff2a44; }
 .live-pair-chg.flat { color: #f59e0b; }
+@media (min-width: 768px) {
+  .live-pair-right { min-width: 100px; }
+  .live-pair-price { font-size: 16px; }
+}
 
 .modal-overlay {
   display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -438,8 +494,8 @@ canvas#tvCanvas { width: 100%; height: 100%; display: block; }
           <span>Buy Gold</span>
         </div>
 
-        <div class="comp-chart-wrap">
-          <div class="comp-chart-label">COMPOSITE SCORE · LIVE</div>
+        <div class="comp-chart-wrap" id="compScoreWrap">
+          <div class="comp-chart-label">24H CORRELATION · 23:00–22:00 GMT</div>
           <div class="comp-chart-value" id="comp-chart-val">0.0</div>
           <canvas id="compScoreCanvas"></canvas>
         </div>
@@ -529,21 +585,21 @@ canvas#tvCanvas { width: 100%; height: 100%; display: block; }
               <span class="live-pair-chg" id="lp-dxy-chg">—</span>
             </div>
           </div>
-          <span class="weight-subtitle">35% weight - Direct Real-Time Market Proximity</span>
+          <span class="weight-subtitle">35% · Direct market proximity</span>
         </div>
 
         <div class="asset-row live-pair-row">
-          <div class="live-pair-main" style="align-items:center;">
+          <div class="live-pair-main">
             <div class="live-pair-left">
               <span class="live-pair-name">US10Y</span>
-              <span class="live-pair-desc" id="lp-us10y-desc">10Y Treasury Yield · Live Market</span>
+              <span class="live-pair-desc" id="lp-us10y-desc">10Y Treasury Yield</span>
             </div>
-            <div class="live-pair-right" id="lp-us10y-box" style="min-width:140px; text-align:right;">
+            <div class="live-pair-right" id="lp-us10y-box">
               <span class="live-pair-price" id="lp-us10y">—</span>
               <span class="live-pair-chg" id="lp-us10y-chg">—</span>
             </div>
           </div>
-          <span class="weight-subtitle" id="lp-us10y-w">25% weight — Yield up = gold headwind</span>
+          <span class="weight-subtitle" id="lp-us10y-w">25% · Yield up = gold headwind</span>
         </div>
 
         <div class="asset-row live-pair-row">
@@ -557,7 +613,7 @@ canvas#tvCanvas { width: 100%; height: 100%; display: block; }
               <span class="live-pair-chg" id="lp-eur-chg">—</span>
             </div>
           </div>
-          <span class="weight-subtitle">15% weight - High - +75%/-80%</span>
+          <span class="weight-subtitle">15% · High correlation</span>
         </div>
 
         <div class="asset-row live-pair-row">
@@ -571,7 +627,7 @@ canvas#tvCanvas { width: 100%; height: 100%; display: block; }
               <span class="live-pair-chg" id="lp-aud-chg">—</span>
             </div>
           </div>
-          <span class="weight-subtitle">10% weight - Mod/High - +60%/-70%</span>
+          <span class="weight-subtitle">10% · Mod/High correlation</span>
         </div>
 
         <div class="asset-row live-pair-row">
@@ -585,7 +641,7 @@ canvas#tvCanvas { width: 100%; height: 100%; display: block; }
               <span class="live-pair-chg" id="lp-jpy-chg">—</span>
             </div>
           </div>
-          <span class="weight-subtitle">10% weight - Moderate - -55%/-65%</span>
+          <span class="weight-subtitle">10% · Moderate inverse</span>
         </div>
 
         <div class="asset-row live-pair-row">
@@ -599,7 +655,7 @@ canvas#tvCanvas { width: 100%; height: 100%; display: block; }
               <span class="live-pair-chg" id="lp-chf-chg">—</span>
             </div>
           </div>
-          <span class="weight-subtitle">5% weight - Mod/High - -65%/-75%</span>
+          <span class="weight-subtitle">5% · Mod/High inverse</span>
         </div>
       </div>
     </div>
@@ -680,6 +736,10 @@ canvas#tvCanvas { width: 100%; height: 100%; display: block; }
 </div>
 
 <script>
+localStorage.removeItem("gold_24h_session_store");
+localStorage.removeItem("gold_24h_session_store_v2");
+localStorage.removeItem("gold_24h_session_store_v3");
+
 const TARGET_PIN = "0905";
 const RECOVERY_PHRASE = "gyanesh pandey";
 let enteredPin = "";
@@ -822,6 +882,129 @@ const state = {
   }
 };
 
+const GOLD_SESSION_STORAGE_KEY = "gold_24h_session_store_final";
+const TOTAL_SESSION_MS = 24 * 60 * 60 * 1000;
+
+function getGoldSessionWindow(nowMs = Date.now()) {
+  const d = new Date(nowMs);
+  let sessionStart = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 23, 0, 0, 0));
+  
+  if (nowMs < sessionStart.getTime()) {
+    sessionStart.setUTCDate(sessionStart.getUTCDate() - 1);
+  }
+  const startMs = sessionStart.getTime();
+  const endMs = startMs + TOTAL_SESSION_MS;
+  const sessionKey = sessionStart.toISOString().slice(0, 10);
+  return { startMs, endMs, sessionKey };
+}
+
+let sessionCompHistory = [];
+
+function load24hHistory() {
+  const { startMs, sessionKey } = getGoldSessionWindow();
+  try {
+    const raw = localStorage.getItem(GOLD_SESSION_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.sessionKey === sessionKey && Array.isArray(parsed.points) && parsed.points.length > 1) {
+        sessionCompHistory = parsed.points
+          .filter(p => p.t >= startMs && p.t <= Date.now())
+          .sort((a, b) => a.t - b.t);
+        if (sessionCompHistory.length > 0) {
+          sessionCompHistory[0] = { t: startMs, v: 0.0 };
+        }
+        return;
+      }
+    }
+  } catch (e) {}
+
+  sessionCompHistory = [{ t: startMs, v: 0.0 }];
+}
+
+function save24hHistory() {
+  const { sessionKey } = getGoldSessionWindow();
+  try {
+    localStorage.setItem(GOLD_SESSION_STORAGE_KEY, JSON.stringify({
+      sessionKey: sessionKey,
+      points: sessionCompHistory
+    }));
+  } catch (e) {}
+}
+
+let lastPointSaveTime = 0;
+function recordSessionScore(score) {
+  const now = Date.now();
+  const { startMs } = getGoldSessionWindow(now);
+
+  if (sessionCompHistory.length > 0 && sessionCompHistory[0].t < startMs) {
+    sessionCompHistory = [{ t: startMs, v: 0.0 }];
+  }
+
+  if (now - lastPointSaveTime > 25000 || sessionCompHistory.length <= 1) {
+    sessionCompHistory.push({ t: now, v: score });
+    lastPointSaveTime = now;
+    sessionCompHistory.sort((a, b) => a.t - b.t);
+    sessionCompHistory[0] = { t: startMs, v: 0.0 };
+    if (sessionCompHistory.length > 3000) {
+      sessionCompHistory = [{ t: startMs, v: 0.0 }, ...sessionCompHistory.slice(-2800)];
+    }
+    save24hHistory();
+  } else {
+    sessionCompHistory[sessionCompHistory.length - 1].v = score;
+    sessionCompHistory[sessionCompHistory.length - 1].t = now;
+  }
+}
+
+async function backfillReal24HHistory() {
+  const { startMs } = getGoldSessionWindow();
+  if (sessionCompHistory.length > 20) return;
+
+  try {
+    const [goldData, dxyData] = await Promise.all([
+      fetchJson('https://biquote.io/api/XAUUSD/ohlc?interval=15m&limit=100').catch(() => null),
+      fetchJson('https://biquote.io/api/DXY/ohlc?interval=15m&limit=100').catch(() => null)
+    ]);
+
+    const goldBars = (goldData && goldData.bars) || [];
+    const dxyBars = (dxyData && dxyData.bars) || [];
+
+    if (goldBars.length > 0) {
+      const dxyMap = new Map();
+      dxyBars.forEach(b => {
+        const t = new Date(b.openTime || b.t || b[0]).getTime();
+        dxyMap.set(Math.floor(t / 900000) * 900000, parseFloat(b.c || b.close || b[4]));
+      });
+
+      const openBar = goldBars.find(b => new Date(b.openTime || b.t || b[0]).getTime() >= startMs) || goldBars[0];
+      const goldBase = parseFloat(openBar.o || openBar.open || openBar[1]);
+      const dxyBase = dxyBars[0] ? parseFloat(dxyBars[0].o || dxyBars[0].open || dxyBars[0][1]) : 100;
+
+      const synthesized = [];
+      goldBars.forEach(b => {
+        const t = new Date(b.openTime || b.t || b[0]).getTime();
+        if (t > startMs && t <= Date.now()) {
+          const gPx = parseFloat(b.c || b.close || b[4]);
+          const dPx = dxyMap.get(Math.floor(t / 900000) * 900000) || dxyBase;
+
+          const gPct = ((gPx - goldBase) / goldBase) * 100;
+          const dPct = ((dPx - dxyBase) / dxyBase) * 100;
+
+          const c_dxy = -Math.max(-1, Math.min(1, dPct / 0.35)) * 40;
+          const c_gold = Math.max(-1, Math.min(1, gPct / 0.60)) * 60;
+          const score = Math.max(-100, Math.min(100, parseFloat((c_dxy + c_gold).toFixed(1))));
+
+          synthesized.push({ t: t, v: score });
+        }
+      });
+
+      synthesized.sort((a, b) => a.t - b.t);
+      sessionCompHistory = [{ t: startMs, v: 0.0 }, ...synthesized];
+      save24hHistory();
+      drawCompScoreChart();
+    }
+  } catch (e) {}
+}
+
 function getInstantCandleTimer() {
   const stepSec = state.tf_seconds || 60;
   const nowSec = Math.floor(Date.now() / 1000);
@@ -924,38 +1107,45 @@ function updateChartBiasesLive() {
 
 function drawCompScoreChart() {
   const canvas = document.getElementById('compScoreCanvas');
-  if (!canvas || !canvas.parentElement) return;
-  const hist = window._compHistory || [];
-  const rect = canvas.parentElement.getBoundingClientRect();
-  if (rect.width < 10 || rect.height < 10) return;
+  const wrap = document.getElementById('compScoreWrap');
+  if (!canvas || !wrap) return;
+
+  const cw = wrap.clientWidth;
+  const ch = wrap.clientHeight;
+  if (cw < 10 || ch < 10) return;
 
   const dpr = window.devicePixelRatio || 1;
-  const w = Math.round(rect.width * dpr);
-  const h = Math.round(rect.height * dpr);
-  if (canvas.width !== w || canvas.height !== h) {
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
-    canvas.width = w;
-    canvas.height = h;
+  const targetW = Math.round(cw * dpr);
+  const targetH = Math.round(ch * dpr);
+
+  if (canvas.width !== targetW || canvas.height !== targetH) {
+    canvas.width = targetW;
+    canvas.height = targetH;
   }
+
   const ctx = canvas.getContext('2d');
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.clearRect(0, 0, w, h);
+  ctx.clearRect(0, 0, targetW, targetH);
   ctx.save();
   ctx.scale(dpr, dpr);
 
-  const cw = rect.width;
-  const ch = rect.height;
-  const padL = 28, padR = 8, padT = 22, padB = 6;
+  const padL = 28, padR = 12, padT = 24, padB = 20;
   const plotW = cw - padL - padR;
   const plotH = ch - padT - padB;
 
   ctx.fillStyle = '#0b0e14';
   ctx.fillRect(0, 0, cw, ch);
 
-  const yAt = (v) => padT + plotH * (1 - (v + 100) / 200);
+  const nowMs = Date.now();
+  const { startMs } = getGoldSessionWindow(nowMs);
 
-  ctx.strokeStyle = '#1a1f2a';
+  const yAt = (v) => padT + plotH * (1 - (v + 100) / 200);
+  const xAtTime = (t) => {
+    const elapsed = Math.max(0, Math.min(TOTAL_SESSION_MS, t - startMs));
+    return padL + (elapsed / TOTAL_SESSION_MS) * plotW;
+  };
+
+  ctx.strokeStyle = '#181d28';
   ctx.lineWidth = 1;
   [-50, 0, 50].forEach(lvl => {
     const y = yAt(lvl);
@@ -965,68 +1155,117 @@ function drawCompScoreChart() {
     ctx.stroke();
   });
 
-  ctx.strokeStyle = '#2a3140';
+  ctx.strokeStyle = '#2b3345';
   ctx.beginPath();
   ctx.moveTo(padL, yAt(0));
   ctx.lineTo(cw - padR, yAt(0));
   ctx.stroke();
 
   ctx.fillStyle = '#4a5060';
-  ctx.font = '9px sans-serif';
+  ctx.font = '8.5px sans-serif';
   ctx.textAlign = 'right';
   [100, 50, 0, -50, -100].forEach(lvl => {
     ctx.fillText(String(lvl), padL - 4, yAt(lvl) + 3);
   });
 
+  const gmtHours = [
+    { offsetHrs: 0, label: "23:00" },
+    { offsetHrs: 3, label: "02:00" },
+    { offsetHrs: 6, label: "05:00" },
+    { offsetHrs: 9, label: "08:00" },
+    { offsetHrs: 14, label: "13:00" },
+    { offsetHrs: 18, label: "17:00" },
+    { offsetHrs: 23, label: "22:00" }
+  ];
+
+  ctx.strokeStyle = '#141822';
+  ctx.fillStyle = '#555d70';
+  ctx.textAlign = 'center';
+  ctx.font = '8px monospace';
+
+  gmtHours.forEach(m => {
+    const markTime = startMs + (m.offsetHrs * 3600 * 1000);
+    const x = xAtTime(markTime);
+    ctx.beginPath();
+    ctx.moveTo(x, padT);
+    ctx.lineTo(x, padT + plotH);
+    ctx.stroke();
+    ctx.fillText(m.label, x, ch - 6);
+  });
+
   const valEl = document.getElementById('comp-chart-val');
-  const latest = hist.length ? hist[hist.length - 1].v : state.smoothed_score;
+  const latest = state.smoothed_score;
   if (valEl) {
     const sign = latest >= 0 ? '+' : '';
     valEl.textContent = sign + Number(latest).toFixed(1);
     valEl.style.color = latest <= -8 ? '#ff2a44' : (latest >= 8 ? '#00f59b' : '#f59e0b');
   }
 
-  if (hist.length < 2) {
-    ctx.restore();
-    return;
+  const cleanPoints = sessionCompHistory
+    .filter(p => p.t >= startMs && p.t <= nowMs)
+    .sort((a, b) => a.t - b.t);
+
+  if (cleanPoints.length === 0) {
+    cleanPoints.push({ t: startMs, v: 0.0 });
+  } else {
+    cleanPoints[0] = { t: startMs, v: 0.0 };
   }
 
-  const xAt = (i) => padL + (i / (hist.length - 1)) * plotW;
+  cleanPoints.push({ t: nowMs, v: latest });
+
+  const curX = xAtTime(nowMs);
+  const curY = yAt(latest);
 
   ctx.beginPath();
-  hist.forEach((pt, i) => {
-    const x = xAt(i), y = yAt(pt.v);
-    if (i === 0) ctx.moveTo(x, y);
+  cleanPoints.forEach((pt, idx) => {
+    const x = xAtTime(pt.t);
+    const y = yAt(pt.v);
+    if (idx === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   });
-  ctx.lineTo(xAt(hist.length - 1), padT + plotH);
-  ctx.lineTo(xAt(0), padT + plotH);
-  ctx.closePath();
 
   const grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
   const col = latest <= -8 ? '255,42,68' : (latest >= 8 ? '0,245,155' : '245,158,11');
-  grad.addColorStop(0, `rgba(${col},0.22)`);
-  grad.addColorStop(1, `rgba(${col},0.02)`);
+  grad.addColorStop(0, `rgba(${col},0.24)`);
+  grad.addColorStop(1, `rgba(${col},0.01)`);
+
+  ctx.save();
+  const firstX = xAtTime(cleanPoints[0].t);
+  ctx.lineTo(curX, padT + plotH);
+  ctx.lineTo(firstX, padT + plotH);
+  ctx.closePath();
   ctx.fillStyle = grad;
   ctx.fill();
+  ctx.restore();
 
   ctx.beginPath();
-  hist.forEach((pt, i) => {
-    const x = xAt(i), y = yAt(pt.v);
-    if (i === 0) ctx.moveTo(x, y);
+  cleanPoints.forEach((pt, idx) => {
+    const x = xAtTime(pt.t);
+    const y = yAt(pt.v);
+    if (idx === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   });
   ctx.strokeStyle = latest <= -8 ? '#ff2a44' : (latest >= 8 ? '#00f59b' : '#f59e0b');
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 2.0;
   ctx.lineJoin = 'round';
   ctx.stroke();
 
-  const lastX = xAt(hist.length - 1);
-  const lastY = yAt(latest);
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 3]);
   ctx.beginPath();
-  ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
+  ctx.moveTo(curX, padT);
+  ctx.lineTo(curX, padT + plotH);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.beginPath();
+  ctx.arc(curX, curY, 4, 0, Math.PI * 2);
   ctx.fillStyle = latest <= -8 ? '#ff2a44' : (latest >= 8 ? '#00f59b' : '#f59e0b');
   ctx.fill();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
 
   ctx.restore();
 }
@@ -1167,13 +1406,10 @@ function recalculateMetricsInstant() {
     }
   }
 
-  // DXY: only real biquote feed — never synthesize from EUR/JPY/CHF
   if (state._feed_dxy_pct && state.dxy_price > 50 && state.dxy_price < 200) {
-    // live % already set by applyBiquoteTick — keep it
   } else if (state.dxy_price > 50 && state.dxy_price < 200 && state.dxy_open_session > 0) {
     state.dxy_pct = parseFloat((((state.dxy_price - state.dxy_open_session) / state.dxy_open_session) * 100).toFixed(2));
   }
-  // else leave previous values; do not invent synthetic DXY
 
   const normalize = (pct, stdVol) => Math.max(-1.0, Math.min(1.0, pct / stdVol));
 
@@ -1197,9 +1433,7 @@ function recalculateMetricsInstant() {
 
   state.smoothed_score = parseFloat((0.75 * state.smoothed_score + 0.25 * state.comp_score).toFixed(1));
 
-  if (!window._compHistory) window._compHistory = [];
-  window._compHistory.push({ t: Date.now(), v: state.smoothed_score });
-  if (window._compHistory.length > 180) window._compHistory.shift();
+  recordSessionScore(state.smoothed_score);
 
   if (state.smoothed_score <= -25) {
     state.signal_text = "STRONG SELL GOLD";
@@ -1348,7 +1582,6 @@ function applyCandleSeries(bars, interval, asset) {
 
   const last = candleHistory[candleHistory.length - 1];
   if (last) {
-    // Prefer live tick over candle close when a fresh biquote quote exists
     if (asset === 'dxy') {
       if (!(state._feed_dxy_pct && state.dxy_price > 50 && (Date.now() - (_dxyLastOk || 0)) < 15000)) {
         state.dxy_price = last.c;
@@ -1628,40 +1861,14 @@ function drawTradingViewChart() {
   const canvas = document.getElementById("tvCanvas");
   if (!canvas || !canvas.parentElement) return;
 
-  if (candleHistory.length === 0 || !candlesMatchAsset(candleHistory, state.chartAsset || 'gold')) {
-    const rect = canvas.parentElement.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const tw = Math.round(rect.width * dpr);
-    const th = Math.round(rect.height * dpr);
-    if (canvas.width !== tw || canvas.height !== th) {
-      canvas.style.width = rect.width + 'px';
-      canvas.style.height = rect.height + 'px';
-      canvas.width = tw;
-      canvas.height = th;
-    }
-    const ctx = canvas.getContext('2d');
-    ctx.save();
-    ctx.scale(dpr, dpr);
-    ctx.fillStyle = '#080a0f';
-    ctx.fillRect(0, 0, rect.width, rect.height);
-    ctx.fillStyle = '#8e95a5';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(
-      state.chartAsset === 'dxy' ? 'Loading DXY live candles…' : 'Loading Gold candles…',
-      rect.width / 2, rect.height / 2
-    );
-    ctx.restore();
-    return;
-  }
-
   const rect = canvas.parentElement.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
   const targetW = Math.round(rect.width * dpr);
   const targetH = Math.round(rect.height * dpr);
+
+  if (targetW < 10 || targetH < 10) return;
+
   if (canvas.width !== targetW || canvas.height !== targetH) {
-    canvas.style.width = `${rect.width}px`;
-    canvas.style.height = `${rect.height}px`;
     canvas.width = targetW;
     canvas.height = targetH;
   }
@@ -1674,6 +1881,18 @@ function drawTradingViewChart() {
 
   ctx.fillStyle = "#080a0f";
   ctx.fillRect(0, 0, w, h);
+
+  if (candleHistory.length === 0 || !candlesMatchAsset(candleHistory, state.chartAsset || 'gold')) {
+    ctx.fillStyle = '#8e95a5';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      state.chartAsset === 'dxy' ? 'Loading DXY live candles…' : 'Loading Gold candles…',
+      rect.width / 2, rect.height / 2
+    );
+    ctx.restore();
+    return;
+  }
 
   const scaleWidth = w > 600 ? 84 : 76;
   const timeHeight = 24;
@@ -1976,6 +2195,7 @@ container.addEventListener("touchend", () => {
 });
 
 window.addEventListener("resize", () => {
+  drawCompScoreChart();
   if (document.getElementById("chartModal").style.display === "flex") {
     triggerRealtimeRender();
   }
@@ -2109,14 +2329,12 @@ let _us10yInflight = false;
 let _us10yLastOk = 0;
 let _us10yLastTry = 0;
 
-/** Apply TradingView scanner row → state (single live provider for US10Y) */
 function applyTvUs10y(json) {
   try {
     const rows = (json && json.data) || [];
     for (let i = 0; i < rows.length; i++) {
       const d = rows[i].d;
       if (!d || !d.length) continue;
-      // columns: close, change(%), change_abs
       let yld = parseFloat(d[0]);
       let chgPct = parseFloat(d[1]);
       let chgAbs = parseFloat(d[2]);
@@ -2125,7 +2343,6 @@ function applyTvUs10y(json) {
         chgPct = parseFloat(d[2]);
         chgAbs = parseFloat(d[3]);
       }
-      // TNX sometimes quoted as 53.07 style
       if (yld > 20 && yld < 100) yld = yld / 10;
       if (!(yld > 1 && yld < 20)) continue;
 
@@ -2154,13 +2371,8 @@ function applyTvUs10y(json) {
   }
 }
 
-/**
- * US10Y — single live provider: TradingView scanner (TVC:US10Y)
- * Uses text/plain body so browser CORS preflight stays simple (Content-Type: application/json is blocked by TV).
- */
 async function fetchUS10YYield() {
   const hasVal = state.tip_price > 1;
-  // Poll every ~8s when live, faster when empty
   const minGap = hasVal ? 8000 : 1500;
   if (_us10yInflight) {
     if (Date.now() - _us10yLastTry > 6000) _us10yInflight = false;
@@ -2185,7 +2397,6 @@ async function fetchUS10YYield() {
   try {
     for (const ep of endpoints) {
       try {
-        // text/plain avoids CORS preflight rejection (TV only allows Referer,Accept headers)
         const res = await fetchWithTimeout(ep, 4000, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
@@ -2206,7 +2417,6 @@ async function fetchUS10YYield() {
 
 function applyBiquoteTick(data, priceKey, pctKey, openKey, minPx, maxPx, digits) {
   if (!data || data.message) return false;
-  // Prefer mid, then bid/ask average, then single side
   let px = parseFloat(data.mid);
   if (isNaN(px) || px <= 0) {
     const bid = parseFloat(data.bid);
@@ -2215,7 +2425,6 @@ function applyBiquoteTick(data, priceKey, pctKey, openKey, minPx, maxPx, digits)
     else px = parseFloat(data.bid || data.ask || data.last);
   }
   if (isNaN(px) || px < minPx || px > maxPx) return false;
-  // Reject stale quotes older than 120s when market is open
   if (data.stale === true) return false;
   if (data.quoteAgeSeconds != null && data.quoteAgeSeconds > 120 && data.marketState === 'open') return false;
 
@@ -2243,7 +2452,6 @@ function paintLiveUI() {
   } catch (e) {}
 }
 
-/** Single provider for DXY: biquote.io only — no synthetic, no secondary sources */
 function tickDXYOnly() {
   if (_dxyInflight) return Promise.resolve(false);
   _dxyInflight = true;
@@ -2273,7 +2481,6 @@ function tickDXYOnly() {
 }
 
 function tickOneSymbol(sym, pk, pctk, ok, minP, maxP, dig) {
-  // DXY is handled exclusively by tickDXYOnly()
   if (sym === 'DXY') return tickDXYOnly();
 
   return fetchWithTimeout('https://biquote.io/api/' + sym, 2500)
@@ -2304,7 +2511,6 @@ function pollRealForexLive() {
   if (_pollStartedAt && (Date.now() - _pollStartedAt) < 900) return;
   _pollStartedAt = Date.now();
 
-  // DXY first — single real-time provider (biquote)
   tickDXYOnly();
 
   const symbols = [
@@ -2328,7 +2534,6 @@ function updateLiveButtonStatus() {
   if (!btn) return;
   const dxyFresh = (Date.now() - (_dxyLastOk || 0)) < 8000;
   const goldOk = state.gold_price > 500;
-  const yieldOk = state.tip_price > 1;
   const isLive = dxyFresh || goldOk;
   if (isLive) {
     btn.classList.remove("stale");
@@ -2360,7 +2565,6 @@ let redFolderEvents = [];
 let nextRedEvent = null;
 
 function toISTParts(tsMs) {
-  // Reliable IST (UTC+5:30) without depending on browser timezone
   const d = new Date(tsMs + (5 * 60 + 30) * 60 * 1000);
   const hours = d.getUTCHours().toString().padStart(2, '0');
   const mins = d.getUTCMinutes().toString().padStart(2, '0');
@@ -2389,7 +2593,6 @@ function parseRawCalendarJSON(raw) {
 
     const impact = String(item.impact || item.importance || item.Impact || '').toLowerCase();
     const cur = String(item.currency || item.country || item.countryCode || item.Currency || '').toUpperCase();
-    // Normalize common country codes → currency for gold-relevant filter
     const currency = (cur === 'US' || cur === 'USA' || cur === 'UNITED STATES') ? 'USD'
       : (cur === 'EU' || cur === 'EUR' || cur === 'EMU') ? 'EUR'
       : cur;
@@ -2415,7 +2618,6 @@ function parseRawCalendarJSON(raw) {
     }
     if (isNaN(eventTime) || eventTime < 1e11) continue;
 
-    // Dedupe by minute + title
     const key = `${Math.floor(eventTime / 60000)}_${title.slice(0, 40)}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -2440,14 +2642,12 @@ function parseRawCalendarJSON(raw) {
 async function syncEconomicCalendarFeed() {
   let cleanEvents = [];
 
-  // Build a ~5-week window so upcoming gold-moving red-folder events (CPI, NFP, FOMC, etc.) appear
   const now = new Date();
-  const from = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days back (for LIVE NOW)
-  const to = new Date(now.getTime() + 35 * 24 * 60 * 60 * 1000);   // ~5 weeks ahead
+  const from = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+  const to = new Date(now.getTime() + 35 * 24 * 60 * 60 * 1000);
   const fromStr = from.toISOString().slice(0, 10);
   const toStr = to.toISOString().slice(0, 10);
 
-  // Primary: biquote free calendar — native CORS, no key, high-impact USD (moves gold)
   const primaryFeeds = [
     `https://biquote.io/api/calendar?importance=high&countries=US&from=${fromStr}&to=${toStr}`,
     `https://biquote.io/api/calendar?importance=high&countries=US`,
@@ -2467,7 +2667,6 @@ async function syncEconomicCalendarFeed() {
     } catch (e) {}
   }
 
-  // Secondary: FairEconomy / ForexFactory this-week JSON
   if (cleanEvents.length === 0) {
     try {
       const res = await fetchWithTimeout('https://nfs.faireconomy.media/ff_calendar_thisweek.json', 3500);
@@ -2506,7 +2705,6 @@ async function syncEconomicCalendarFeed() {
 
 function sortAndPaintNews() {
   const now = Date.now();
-  // Keep events from ~3 min ago so "LIVE NOW" still shows briefly after release
   const upcoming = redFolderEvents
     .filter(e => e.timestamp > (now - 180000))
     .sort((a, b) => a.timestamp - b.timestamp);
@@ -2595,15 +2793,11 @@ function toggleFrontNewsDrawer() {
 }
 
 setInterval(tickNewsCountdown, 1000);
-// Refresh red-folder calendar every 3 minutes so upcoming gold/USD events stay live
 setInterval(syncEconomicCalendarFeed, 180000);
 
 function initApp() {
-  window._compHistory = [];
-  const seed = state.smoothed_score || 0;
-  for (let i = 0; i < 12; i++) {
-    window._compHistory.push({ t: Date.now() - (12 - i) * 1500, v: seed });
-  }
+  load24hHistory();
+  backfillReal24HHistory();
 
   initLiveSocket();
   getInstantCandleTimer();
@@ -2613,12 +2807,10 @@ function initApp() {
   _dxyLastOk = 0;
   pollRealForexLive();
 
-  // Force early DXY ticks so the row is never blank on load
   setTimeout(() => tickDXYOnly(), 100);
   setTimeout(() => tickDXYOnly(), 800);
   setTimeout(() => tickDXYOnly(), 2500);
 
-  // Force early US10Y loads (TradingView single provider)
   setTimeout(() => { _us10yLastTry = 0; fetchUS10YYield().then(ok => { if (ok) paintLiveUI(); }); }, 150);
   setTimeout(() => { _us10yLastTry = 0; fetchUS10YYield().then(ok => { if (ok) paintLiveUI(); }); }, 1200);
   setTimeout(() => { _us10yLastTry = 0; fetchUS10YYield().then(ok => { if (ok) paintLiveUI(); }); }, 3500);
@@ -2627,13 +2819,11 @@ function initApp() {
   syncEconomicCalendarFeed();
 
   setInterval(pollRealForexLive, 1000);
-  // Dedicated DXY watchdog: if last good quote is older than 4s, force another biquote pull
   setInterval(() => {
     if ((Date.now() - (_dxyLastOk || 0)) > 4000) {
       tickDXYOnly();
     }
   }, 2000);
-  // Dedicated US10Y watchdog — keep TradingView yield fresh every ~8–10s
   setInterval(() => {
     if ((Date.now() - (_us10yLastOk || 0)) > 10000 || !(state.tip_price > 1)) {
       _us10yLastTry = 0;
