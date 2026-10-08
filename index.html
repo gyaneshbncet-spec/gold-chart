@@ -960,8 +960,8 @@ async function backfillReal24HHistory() {
 
   try {
     const [goldData, dxyData] = await Promise.all([
-      fetchJson('https://biquote.io/api/XAUUSD/ohlc?interval=15m&limit=100').catch(() => null),
-      fetchJson('https://biquote.io/api/DXY/ohlc?interval=15m&limit=100').catch(() => null)
+      fetchJson('https://biquote.io/api/XAUUSD/ohlc?interval=15m&limit=300').catch(() => null),
+      fetchJson('https://biquote.io/api/DXY/ohlc?interval=15m&limit=300').catch(() => null)
     ]);
 
     const goldBars = (goldData && goldData.bars) || [];
@@ -1573,6 +1573,10 @@ function applyCandleSeries(bars, interval, asset) {
     candleHistory = normalized;
   }
 
+  if (candleHistory.length > 300) {
+    candleHistory = candleHistory.slice(-300);
+  }
+
   allCandidateDemandOBs = [];
   allCandidateSupplyOBs = [];
   storedDemandOBs = [];
@@ -1615,7 +1619,7 @@ async function fetchRealCandles(interval, forceClear) {
   const asset = state.chartAsset || 'gold';
   const is3m = (interval === '3m');
   const bqInterval = is3m ? '1m' : (interval === '1h' ? '1h' : (interval === '4h' ? '4h' : (interval === '1d' ? '1d' : interval)));
-  const limitCount = is3m ? 300 : 150;
+  const limitCount = is3m ? 900 : 300;
 
   if (isFetchingCandles && !forceClear) return;
   isFetchingCandles = true;
@@ -1637,7 +1641,8 @@ async function fetchRealCandles(interval, forceClear) {
 
     try {
       const fallbackInterval = is3m ? '1m' : '15m';
-      const data2 = await fetchJson(`https://biquote.io/api/${symbol}/ohlc?interval=${fallbackInterval}&limit=150`);
+      const fallbackLimit = is3m ? 900 : 300;
+      const data2 = await fetchJson(`https://biquote.io/api/${symbol}/ohlc?interval=${fallbackInterval}&limit=${fallbackLimit}`);
       let bars2 = (data2 && data2.bars) ? data2.bars.slice() : [];
       if (bars2.length > 1 && new Date(bars2[0].openTime) > new Date(bars2[bars2.length - 1].openTime)) bars2.reverse();
       applyCandleSeries(bars2, interval, asset);
@@ -2257,7 +2262,7 @@ function rollLocalCandle() {
     closeTime: currentBarSlot + stepMs
   });
 
-  if (candleHistory.length > 400) candleHistory = candleHistory.slice(-350);
+  if (candleHistory.length > 300) candleHistory = candleHistory.slice(-300);
 
   scanAndStoreOrderBlocks(candleHistory);
   executeTradingViewRayArchitecture(candleHistory);
